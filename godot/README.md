@@ -43,6 +43,13 @@ godot --headless --path godot --fixed-fps 60 res://tests/integration.tscn
 - 天气：雨 / 雪 / 雾 / 雷暴，每 30 个敌人切换。
 - Toast：圆角墨底 + 淡出。
 
+## 肉鸽无尽 R1
+
+- 每波清空三选一词条；10 条词条；真无尽（数量 +15%/波、血量 +10%/波、每 5 波提速）。
+- 词条：无蹩腿马、无炮架炮、双车碾压、范围扩大、冷却减半、放置免棋气、击杀棋气 +50%、天降棋气、苦肉计、连环计。
+- 已获得词条显示在 HUD 右上；重开/返回首页清空。
+- 待做：R2 每 10 波异变 / 每 5 波精英；R3 马后炮 / 双车错 / 重炮、排行榜。
+
 ## 仍缺（M3）
 
 - 墨刃正片叠底着色器、光刃贴图 + 对象池、聚墨前摇视觉。
@@ -58,12 +65,12 @@ godot/
 ├── art/            从 assets/resources/textures 复制的原美术
 ├── scenes/         main / enemy / towers / ui
 ├── scripts/
-│   ├── autoload/   GameSession / Qi / Lives / Log / Toast
+│   ├── autoload/   GameSession / Qi / Lives / Log / Toast / RunState
 │   ├── core/       PathGraph / PathSpawner / WaveManager / RunController / WeatherSystem
 │   ├── entities/   Enemy / PathWalker / HitPause
 │   ├── towers/     TowerBase / TowerChe / TowerPao / TowerMa / TowerPlacement
 │   ├── ui/         Hud / Sidebar / TowerCard / CardPicker / TowerActionMenu / TowerDetail / HomeMenu / GameOver
-│   ├── data/       path_graph_data.gd（生成物）/ enemy_kinds.gd
+│   ├── data/       path_graph_data.gd（生成物）/ enemy_kinds.gd / trait_pool.gd
 │   └── util/       Coords / UiFont
 ├── tests/          run_tests.gd + test_*.gd + integration.tscn
 └── tools/          convert_path_graph.py

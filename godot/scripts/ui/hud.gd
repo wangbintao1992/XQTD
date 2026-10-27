@@ -8,11 +8,12 @@ extends CanvasLayer
 @onready var wave_label: Label = $Root/WaveText
 @onready var tip_label: Label = $Root/RoundTip
 @onready var progress: ProgressBar = $Root/ProgressBar
+@onready var trait_label: Label = $Root/TraitLabel
 
 
 func _ready() -> void:
 	var font := UiFont.make()
-	for label in [qi_label, lives_label, wave_label, tip_label]:
+	for label in [qi_label, lives_label, wave_label, tip_label, trait_label]:
 		label.add_theme_font_override("font", font)
 
 	set_qi(100)
@@ -20,6 +21,12 @@ func _ready() -> void:
 	set_wave(1, 5)
 	set_progress(0.0)
 	set_tip("")
+
+	if RunStateData.instance:
+		RunStateData.instance.traits_changed.connect(_refresh_traits)
+		_refresh_traits()
+	else:
+		set_traits([])
 
 	var qi = get_node_or_null("/root/Qi")
 	if qi:
@@ -54,3 +61,17 @@ func set_progress(p: float) -> void:
 func set_tip(text: String) -> void:
 	tip_label.text = text
 	tip_label.visible = text != ""
+
+
+func _refresh_traits() -> void:
+	set_traits(RunStateData.instance.traits if RunStateData.instance else [])
+
+
+func set_traits(traits: Array) -> void:
+	if traits.is_empty():
+		trait_label.text = "词条：—"
+		return
+	var lines: Array[String] = ["词条："]
+	for id in traits:
+		lines.append("· " + TraitPool.title(str(id)))
+	trait_label.text = "\n".join(lines)

@@ -32,6 +32,20 @@ func _ready() -> void:
 		and main.get_node("Towers").get_child_count() >= 3
 	print("INTEGRATION towers=", placed_ok)
 
+	var wave = main.get_node_or_null("WaveManager")
+	var endless_ok: bool = wave != null and wave.endless
+	print("INTEGRATION endless=", endless_ok)
+
+	var rs_ok := RunStateData.instance != null
+	if RunStateData.instance:
+		RunStateData.instance.add_trait("free_cannon")
+		rs_ok = RunStateData.has("free_cannon")
+	print("INTEGRATION traits=", rs_ok)
+
+	var hud = main.get_node_or_null("HUD")
+	var hud_ok: bool = hud != null and hud.trait_label.text.find(TraitPool.title("free_cannon")) >= 0
+	print("INTEGRATION hud_traits=", hud_ok)
+
 	var menu = main.get_node_or_null("TowerActionMenu")
 	if pao:
 		pao.clicked.emit(pao)
@@ -69,9 +83,11 @@ func _ready() -> void:
 	await get_tree().process_frame
 	var reset_ok: bool = game_over != null and not game_over.visible \
 		and Qi.value == 100 and Lives.value == 20 \
-		and main.get_node("Towers").get_child_count() == 0
+		and main.get_node("Towers").get_child_count() == 0 \
+		and RunStateData.instance != null and RunStateData.instance.traits.size() == 0
 	print("INTEGRATION reset=", reset_ok)
 
 	var ok: bool = count > 0 and placed_ok and menu_ok and sell_ok \
-		and weather_ok and picked[0] == 1 and over_ok and reset_ok
+		and weather_ok and picked[0] == 1 and over_ok and reset_ok \
+		and endless_ok and rs_ok and hud_ok
 	get_tree().quit(0 if ok else 1)
