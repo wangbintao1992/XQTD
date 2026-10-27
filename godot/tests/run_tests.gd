@@ -1,0 +1,57 @@
+extends SceneTree
+
+var tests := 0
+var failures := 0
+
+const TEST_PATHS := [
+	"res://tests/test_coords.gd",
+]
+
+
+func _initialize() -> void:
+	for path in TEST_PATHS:
+		var script = load(path)
+		if script == null or not script.can_instantiate():
+			_fail("failed to load " + path)
+			continue
+		var instance = script.new()
+		if instance.has_method("run"):
+			instance.run(self)
+		else:
+			_fail(path + " has no run(t)")
+	print("TESTS: %d, FAILURES: %d" % [tests, failures])
+	quit(0 if failures == 0 else 1)
+
+
+func eq(actual, expected, msg: String) -> void:
+	tests += 1
+	if actual != expected:
+		failures += 1
+		printerr("FAIL: %s (expected %s, got %s)" % [msg, expected, actual])
+
+
+func approx(a: float, b: float, eps: float, msg: String) -> void:
+	tests += 1
+	if absf(a - b) > eps:
+		failures += 1
+		printerr("FAIL: %s (expected %f, got %f)" % [msg, b, a])
+
+
+func approx_v(a: Vector2, b: Vector2, eps: float, msg: String) -> void:
+	tests += 1
+	if a.distance_to(b) > eps:
+		failures += 1
+		printerr("FAIL: %s (expected %s, got %s)" % [msg, b, a])
+
+
+func check(cond: bool, msg: String) -> void:
+	tests += 1
+	if not cond:
+		failures += 1
+		printerr("FAIL: " + msg)
+
+
+func _fail(msg: String) -> void:
+	tests += 1
+	failures += 1
+	printerr("FAIL: " + msg)
