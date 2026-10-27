@@ -16,6 +16,7 @@ var home: HomeMenu
 var game_over: GameOver
 var action_menu: TowerActionMenu
 var tower_detail: TowerDetail
+var weather: WeatherSystem
 
 
 func _ready() -> void:
@@ -37,6 +38,7 @@ func _ready() -> void:
 		game_over = main.get_node_or_null("GameOver") as GameOver
 		action_menu = main.get_node_or_null("TowerActionMenu") as TowerActionMenu
 		tower_detail = main.get_node_or_null("TowerDetail") as TowerDetail
+		weather = main.get_node_or_null("Weather") as WeatherSystem
 
 	if home:
 		home.endless_pressed.connect(start_new_run)
@@ -68,6 +70,8 @@ func reset_run() -> void:
 		action_menu.close()
 	if tower_detail:
 		tower_detail.hide_detail()
+	if weather:
+		weather.reset()
 	if enemies:
 		for child in enemies.get_children():
 			enemies.remove_child(child)

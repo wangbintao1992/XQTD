@@ -15,6 +15,7 @@ extends Node2D
 @onready var card_picker: CardPicker = $CardPicker
 @onready var action_menu: TowerActionMenu = $TowerActionMenu
 @onready var tower_detail: TowerDetail = $TowerDetail
+@onready var weather: WeatherSystem = $Weather
 
 var graph: PathGraph
 
@@ -22,6 +23,7 @@ var graph: PathGraph
 func _ready() -> void:
 	graph = PathGraph.new()
 	spawner.setup(graph, enemies, Qi, Lives, GameSession)
+	weather.setup(spawner)
 	wave.setup(spawner, card_picker, GameSession, Lives)
 	placement.setup(graph, towers, enemies, Qi)
 	action_menu.detail = tower_detail
