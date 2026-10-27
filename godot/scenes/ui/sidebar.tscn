@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/sidebar.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/tower_card.gd" id="2"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" path="res://art/qz/b_pao.png" id="5"]
 [ext_resource type="Texture2D" path="res://art/qz/b_ma.png" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/towers/tower_pao.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/towers/tower_ma.tscn" id="8"]
 
 [node name="Sidebar" type="CanvasLayer"]
 layer = 1
@@ -121,11 +122,11 @@ offset_top = 405.0
 offset_right = 190.0
 offset_bottom = 595.0
 script = ExtResource("2")
-tower_scene = ExtResource("3")
+tower_scene = ExtResource("8")
 tower_texture = ExtResource("6")
 cost = 50
 display_name = "马"
-available = false
+available = true
 
 [node name="Bg" type="ColorRect" parent="Panel/CardMa"]
 layout_mode = 0
