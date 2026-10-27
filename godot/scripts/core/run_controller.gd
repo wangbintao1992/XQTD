@@ -14,6 +14,8 @@ var wave: WaveManager
 var hud: Hud
 var home: HomeMenu
 var game_over: GameOver
+var action_menu: TowerActionMenu
+var tower_detail: TowerDetail
 
 
 func _ready() -> void:
@@ -33,6 +35,8 @@ func _ready() -> void:
 		hud = main.get_node_or_null("HUD") as Hud
 		home = main.get_node_or_null("HomeMenu") as HomeMenu
 		game_over = main.get_node_or_null("GameOver") as GameOver
+		action_menu = main.get_node_or_null("TowerActionMenu") as TowerActionMenu
+		tower_detail = main.get_node_or_null("TowerDetail") as TowerDetail
 
 	if home:
 		home.endless_pressed.connect(start_new_run)
@@ -60,6 +64,10 @@ func setup_for_test(qi_: Object, lives_: Object, session_: Object) -> void:
 func reset_run() -> void:
 	if game_over:
 		game_over.hide_popup()
+	if action_menu:
+		action_menu.close()
+	if tower_detail:
+		tower_detail.hide_detail()
 	if enemies:
 		for child in enemies.get_children():
 			enemies.remove_child(child)
