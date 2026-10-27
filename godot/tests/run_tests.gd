@@ -19,6 +19,8 @@ const TEST_PATHS := [
 	"res://tests/test_card_picker.gd",
 	"res://tests/test_tower_menu.gd",
 	"res://tests/test_weather.gd",
+	"res://tests/test_run_state.gd",
+	"res://tests/test_trait_pool.gd",
 ]
 
 
