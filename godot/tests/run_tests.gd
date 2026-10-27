@@ -6,6 +6,7 @@ var failures := 0
 const TEST_PATHS := [
 	"res://tests/test_coords.gd",
 	"res://tests/test_path_graph.gd",
+	"res://tests/test_autoloads.gd",
 ]
 
 

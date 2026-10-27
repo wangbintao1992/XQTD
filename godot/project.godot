@@ -10,6 +10,14 @@ config/name="墨守山河"
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
+[autoload]
+
+GameSession="*res://scripts/autoload/game_session.gd"
+Qi="*res://scripts/autoload/qi.gd"
+Lives="*res://scripts/autoload/lives.gd"
+Log="*res://scripts/autoload/log.gd"
+Toast="*res://scripts/autoload/toast.gd"
+
 [display]
 
 window/size/viewport_width=1280
