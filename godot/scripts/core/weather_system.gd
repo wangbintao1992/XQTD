@@ -4,14 +4,16 @@ extends Node2D
 ## 每 stage_size 个敌人换一种天气：雨 → 雪 → 雾 → 雷暴 → 循环。
 
 @export var stage_size := 30
-@export var start_immediately := true
 @export var size_scale := 3.0
 
 var spawner
+var session
+var lives
 
 var layers := {}
 var _last_stage := -1
 var _current := ""
+var current_weather := ""
 
 const PRESETS := [
 	{
@@ -93,12 +95,13 @@ const PRESETS := [
 
 func _ready() -> void:
 	build_layers()
-	if start_immediately:
-		apply_stage(0)
+	set_weather("")
 
 
-func setup(spawner_) -> void:
+func setup(spawner_, session_ = null, lives_ = null) -> void:
 	spawner = spawner_
+	session = session_
+	lives = lives_
 
 
 func stage_for(spawned: int) -> int:
@@ -106,9 +109,15 @@ func stage_for(spawned: int) -> int:
 
 
 func _process(_delta: float) -> void:
+	if session and not session.started:
+		set_weather("")
+		return
+	if lives and lives.is_game_over:
+		set_weather("")
+		return
 	if spawner == null:
 		return
-	var s := stage_for(spawner.total_count())
+	var s := stage_for(_spawned_total())
 	if s != _last_stage:
 		apply_stage(s)
 
@@ -121,6 +130,7 @@ func apply_stage(stage: int) -> void:
 
 func set_weather(weather_name: String) -> void:
 	_current = weather_name
+	current_weather = weather_name
 	for key in layers:
 		for node in layers[key]:
 			node.emitting = (key == weather_name)
@@ -130,6 +140,13 @@ func set_weather(weather_name: String) -> void:
 func reset() -> void:
 	_last_stage = -1
 	apply_stage(0)
+
+
+func _spawned_total() -> int:
+	var v = spawner.get("run_spawned_total")
+	if v != null:
+		return int(v)
+	return spawner.total_count()
 
 
 func build_layers() -> void:

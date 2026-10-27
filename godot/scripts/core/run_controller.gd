@@ -90,6 +90,7 @@ func reset_run() -> void:
 		wave.set_process(true)
 	if spawner:
 		spawner.deploy()
+		spawner.reset_run_counter()
 		spawner.set_process(true)
 	if hud:
 		hud.set_wave(1, wave.max_wave if wave else 5)
@@ -122,5 +123,7 @@ func _on_game_over() -> void:
 		spawner.set_process(false)
 	if wave:
 		wave.set_process(false)
+	if weather:
+		weather.set_weather("")
 	if enemies:
 		enemies.process_mode = Node.PROCESS_MODE_DISABLED

@@ -95,6 +95,14 @@ func pick(index: int) -> void:
 		return
 	_picked = true
 	slots[index].selected = true
+	for i in slots.size():
+		var slot: Dictionary = slots[i]
+		var node: Control = slot.node
+		if node:
+			if i == index:
+				node.scale = Vector2(1.06, 1.06)
+			else:
+				node.modulate = Color(0.43, 0.43, 0.43)
 	picked.emit(index)
 	_closing = true
 	_close_left = maxf(0.05, pick_delay)

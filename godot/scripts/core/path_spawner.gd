@@ -19,6 +19,7 @@ var lives: Object
 var session: Object
 
 var spawned_count := 0
+var run_spawned_total := 0
 var spawn_timer := 0.0
 var _rng := RandomNumberGenerator.new()
 
@@ -57,6 +58,10 @@ func deploy() -> void:
 			child.queue_free()
 	spawned_count = 0
 	spawn_timer = 0.0
+
+
+func reset_run_counter() -> void:
+	run_spawned_total = 0
 
 
 func total_count() -> int:
@@ -108,4 +113,5 @@ func spawn_one() -> void:
 		enemy.reached_base.connect(func(cost: int): lives.lose(cost))
 
 	spawned_count += 1
+	run_spawned_total += 1
 	spawned.emit(enemy)

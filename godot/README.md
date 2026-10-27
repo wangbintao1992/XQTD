@@ -31,7 +31,7 @@ godot --headless --path godot --fixed-fps 60 res://tests/integration.tscn
 - 车：横竖 4 方向、一次性射线、穿透、受击暂停；M1 视觉是 `Line2D` 闪线。
 - HUD：棋气 / 生命 / 波次 / 进度条。
 - 生命归零 → 结束面板；重试 / 返回首页都会干净重置。
-- 左侧塔栏可展开 / 缩回；炮、马卡片暂为占位。
+- 左侧塔栏可展开 / 缩回（炮、马在 M2 开放）。
 
 ## M2 已实现
 
@@ -59,10 +59,10 @@ godot/
 ├── scenes/         main / enemy / towers / ui
 ├── scripts/
 │   ├── autoload/   GameSession / Qi / Lives / Log / Toast
-│   ├── core/       PathGraph / PathSpawner / WaveManager / RunController
+│   ├── core/       PathGraph / PathSpawner / WaveManager / RunController / WeatherSystem
 │   ├── entities/   Enemy / PathWalker / HitPause
-│   ├── towers/     TowerBase / TowerChe / TowerPlacement
-│   ├── ui/         Hud / Sidebar / TowerCard / HomeMenu / GameOver
+│   ├── towers/     TowerBase / TowerChe / TowerPao / TowerMa / TowerPlacement
+│   ├── ui/         Hud / Sidebar / TowerCard / CardPicker / TowerActionMenu / TowerDetail / HomeMenu / GameOver
 │   ├── data/       path_graph_data.gd（生成物）/ enemy_kinds.gd
 │   └── util/       Coords / UiFont
 ├── tests/          run_tests.gd + test_*.gd + integration.tscn

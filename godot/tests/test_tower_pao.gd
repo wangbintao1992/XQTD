@@ -35,6 +35,26 @@ func run(t) -> void:
 	screen.free()
 	target.free()
 
+	# 溅射：目标 55 内其他敌人掉 2，炮架排除
+	var screen2 := _dummy(enemies, Vector2(100, 0))
+	var splash_target := _dummy(enemies, Vector2(200, 0))
+	var splash := _dummy(enemies, Vector2(220, 0))
+	tower.fire()
+	t.eq(screen2.hp, 10, "screen excluded from splash")
+	t.eq(splash_target.hp, 7, "target takes 3")
+	t.eq(splash.hp, 8, "splash takes 2")
+	screen2.free()
+	splash_target.free()
+	splash.free()
+
+	# require_screen=false：无炮架也能直射，伤害 1
+	tower.require_screen = false
+	var direct := _dummy(enemies, Vector2(100, 0))
+	tower.fire()
+	t.eq(direct.hp, 9, "direct damage 1")
+	direct.free()
+	tower.require_screen = true
+
 	# 塔也可以当炮架（没有 take_damage，只当 screen）
 	var t2 := Node2D.new()
 	t2.position = Vector2(0, 100)

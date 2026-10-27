@@ -23,7 +23,7 @@ var graph: PathGraph
 func _ready() -> void:
 	graph = PathGraph.new()
 	spawner.setup(graph, enemies, Qi, Lives, GameSession)
-	weather.setup(spawner)
+	weather.setup(spawner, GameSession, Lives)
 	wave.setup(spawner, card_picker, GameSession, Lives)
 	placement.setup(graph, towers, enemies, Qi)
 	action_menu.detail = tower_detail

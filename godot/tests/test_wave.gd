@@ -21,6 +21,7 @@ class FakeSpawner:
 
 class FakePicker:
 	var opened := 0
+	var closed := 0
 	var cb: Callable
 
 	func open_with_timeout(_seconds: float, done: Callable) -> void:
@@ -28,7 +29,7 @@ class FakePicker:
 		cb = done
 
 	func close() -> void:
-		pass
+		closed += 1
 
 
 func run(t) -> void:
@@ -85,11 +86,15 @@ func run(t) -> void:
 	wm3._process(0.0)
 	t.check(wm3.picking, "picker opened on clear")
 	t.eq(fp.opened, 1, "picker opened once")
+	wm3._process(1.0)
+	t.eq(wm3.wave, 1, "picking pauses wave")
 	fp.cb.call()
 	t.check(not wm3.picking, "picking done")
 	t.check(wm3.counting, "counting after pick")
 	wm3._process(3.1)
 	t.eq(wm3.wave, 2, "wave advanced after pick")
+	wm3.reset()
+	t.eq(fp.closed, 2, "reset closes picker each time")
 	wm3.free()
 
 	root.free()

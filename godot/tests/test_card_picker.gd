@@ -16,6 +16,8 @@ func run(t) -> void:
 
 	cp.pick(1)
 	t.check(not cp.is_picking, "picked stops picking")
+	t.check(cp.slots[1].node.scale.x > 1.0, "picked card scales")
+	t.check(cp.slots[0].node.modulate.r < 1.0, "others dimmed")
 	cp.close()
 	t.eq(done[0], 1, "done called once")
 	cp.free()
