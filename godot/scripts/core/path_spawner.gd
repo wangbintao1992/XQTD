@@ -20,6 +20,8 @@ var session: Object
 
 var spawned_count := 0
 var run_spawned_total := 0
+var hp_mult := 1.0
+var speed_mult := 1.0
 var spawn_timer := 0.0
 var _rng := RandomNumberGenerator.new()
 
@@ -62,6 +64,8 @@ func deploy() -> void:
 
 func reset_run_counter() -> void:
 	run_spawned_total = 0
+	hp_mult = 1.0
+	speed_mult = 1.0
 
 
 func total_count() -> int:
@@ -103,12 +107,19 @@ func spawn_one() -> void:
 	var e: Dictionary = graph.edges[edge]
 	var dir := 1 if e.a == graph.start_node else -1
 
+	var kind_copy: Dictionary = kind.duplicate()
+	kind_copy.hp = maxi(1, int(round(float(kind.hp) * hp_mult)))
+	var walker_speed := speed * float(kind.speed_factor) * speed_mult
+
 	var enemy = ENEMY_SCENE.instantiate()
-	enemy.setup(kind, graph, edge, dir, speed * float(kind.speed_factor))
+	enemy.setup(kind_copy, graph, edge, dir, walker_speed)
 	enemies_root.add_child(enemy)
 
 	if qi:
-		enemy.died.connect(func(k: Dictionary): qi.earn(int(k.qi_reward)))
+		enemy.died.connect(func(k: Dictionary):
+			var reward := int(round(float(k.qi_reward) * (1.5 if RunStateData.has("qi_boost") else 1.0)))
+			qi.earn(reward)
+		)
 	if lives:
 		enemy.reached_base.connect(func(cost: int): lives.lose(cost))
 

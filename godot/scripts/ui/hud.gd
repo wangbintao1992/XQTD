@@ -41,7 +41,10 @@ func set_lives(v: int) -> void:
 
 
 func set_wave(w: int, max_wave: int) -> void:
-	wave_label.text = "波次 %d/%d" % [w, max_wave]
+	if max_wave <= 0:
+		wave_label.text = "波次 %d" % w
+	else:
+		wave_label.text = "波次 %d/%d" % [w, max_wave]
 
 
 func set_progress(p: float) -> void:

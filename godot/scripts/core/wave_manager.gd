@@ -11,6 +11,11 @@ var enemies_per_round := 100
 var max_wave := 5
 var round_gap := 3.0
 var pick_time := 10.0
+@export var endless := false
+@export var base_round := 20
+@export var count_growth := 1.15
+@export var hp_growth := 1.1
+@export var speed_growth := 1.02
 
 var wave := 1
 var counting := false
@@ -50,6 +55,8 @@ func reset() -> void:
 		picker.close()
 	picking = false
 	wave = 1
+	if RunStateData.instance:
+		RunStateData.instance.wave = 1
 	counting = false
 	countdown = 0.0
 	wave_changed.emit(wave)
@@ -58,13 +65,28 @@ func reset() -> void:
 
 func start_run() -> void:
 	reset()
+	_apply_wave_scaling()
 	if spawner:
-		spawner.enemy_count = enemies_per_round
 		spawner.deploy()
 	_emit_progress()
 
 
+func _apply_wave_scaling() -> void:
+	if spawner == null:
+		return
+	if endless:
+		spawner.enemy_count = maxi(1, int(round(float(base_round) * pow(count_growth, wave - 1))))
+		spawner.hp_mult = pow(hp_growth, wave - 1)
+		spawner.speed_mult = pow(speed_growth, floor((wave - 1) / 5.0))
+	else:
+		spawner.enemy_count = enemies_per_round
+
+
 func progress_with(total: int, alive: int) -> float:
+	if endless:
+		if total > 0:
+			return clampf(float(total - alive) / float(total), 0.0, 1.0)
+		return 0.0
 	var per := 1.0 / float(maxi(1, max_wave))
 	var done := float(wave - 1)
 	var inside := 0.0
@@ -87,25 +109,45 @@ func _process(delta: float) -> void:
 		countdown -= delta
 		if countdown <= 0.0:
 			counting = false
-			wave = mini(max_wave, wave + 1)
-			spawner.enemy_count = enemies_per_round
+			wave = (wave + 1) if endless else mini(max_wave, wave + 1)
+			if RunStateData.instance:
+				RunStateData.instance.wave = wave
+			_apply_wave_scaling()
 			spawner.deploy()
 			wave_changed.emit(wave)
 		_emit_progress()
 		return
 
 	if spawner.total_count() >= spawner.enemy_count and spawner.alive_count() <= 0:
-		if picker and picker.has_method("open_with_timeout"):
+		if picker:
 			picking = true
-			picker.open_with_timeout(pick_time, func():
-				picking = false
-				counting = true
-				countdown = round_gap
-			)
+			var owned = RunStateData.instance.traits if RunStateData.instance else []
+			var ids = TraitPool.pick_three(owned)
+			if picker.has_method("open_with_traits"):
+				picker.open_with_traits(ids, pick_time, func(): _on_pick_done())
+			elif picker.has_method("open_with_timeout"):
+				picker.open_with_timeout(pick_time, func(): _on_pick_done())
+			else:
+				_on_pick_done()
 		else:
 			counting = true
 			countdown = round_gap
 	_emit_progress()
+
+
+func _on_pick_done() -> void:
+	picking = false
+	var id := ""
+	if picker:
+		var v = picker.get("selected_trait")
+		if v != null:
+			id = str(v)
+	if id != "":
+		if RunStateData.instance:
+			RunStateData.instance.add_trait(id)
+		TraitPool.apply_on_pick(id)
+	counting = true
+	countdown = round_gap
 
 
 func _emit_progress() -> void:

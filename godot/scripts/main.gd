@@ -25,13 +25,14 @@ func _ready() -> void:
 	spawner.setup(graph, enemies, Qi, Lives, GameSession)
 	weather.setup(spawner, GameSession, Lives)
 	wave.setup(spawner, card_picker, GameSession, Lives)
+	wave.endless = true
 	placement.setup(graph, towers, enemies, Qi)
 	action_menu.detail = tower_detail
 	placement.tower_placed.connect(func(tower: Node):
 		tower.clicked.connect(func(t: Node): action_menu.show_for(t))
 	)
 
-	wave.wave_changed.connect(func(w: int): hud.set_wave(w, wave.max_wave))
+	wave.wave_changed.connect(func(w: int): hud.set_wave(w, 0 if wave.endless else wave.max_wave))
 	wave.progress_changed.connect(func(p: float): hud.set_progress(p))
 
 	for card in sidebar.get_cards():

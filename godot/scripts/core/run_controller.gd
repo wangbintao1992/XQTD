@@ -64,6 +64,8 @@ func setup_for_test(qi_: Object, lives_: Object, session_: Object) -> void:
 
 
 func reset_run() -> void:
+	if RunStateData.instance:
+		RunStateData.instance.reset()
 	if game_over:
 		game_over.hide_popup()
 	if action_menu:
