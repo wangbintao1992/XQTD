@@ -14,6 +14,8 @@ signal picked(index: int)
 @export var auto_pick_first := true
 
 var slots: Array[Dictionary] = []
+var options: Array[String] = []
+var selected_trait := ""
 
 var _open := false
 var _picked := false
@@ -36,6 +38,19 @@ var remaining_pick_time: float:
 
 
 func open_with_timeout(seconds: float, done: Callable = Callable()) -> void:
+	options = []
+	selected_trait = ""
+	_done = done
+	open()
+	_timeout_total = maxf(0.0, seconds)
+	_timeout_left = _timeout_total
+
+
+func open_with_traits(ids: Array, seconds: float, done: Callable = Callable()) -> void:
+	options = []
+	for id in ids:
+		options.append(str(id))
+	selected_trait = ""
 	_done = done
 	open()
 	_timeout_total = maxf(0.0, seconds)
@@ -95,6 +110,8 @@ func pick(index: int) -> void:
 		return
 	_picked = true
 	slots[index].selected = true
+	if index < options.size():
+		selected_trait = options[index]
 	for i in slots.size():
 		var slot: Dictionary = slots[i]
 		var node: Control = slot.node
@@ -164,6 +181,32 @@ func _build() -> void:
 		tex.stretch_mode = TextureRect.STRETCH_SCALE
 		tex.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		card.add_child(tex)
+
+		if options.size() == 3:
+			var title := Label.new()
+			title.text = TraitPool.title(options[i])
+			title.position = Vector2(12, 26)
+			title.size = Vector2(card_width - 24, 40)
+			title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			title.add_theme_font_override("font", font)
+			title.add_theme_font_size_override("font_size", 24)
+			title.add_theme_color_override("font_color", Color(0.15, 0.12, 0.1))
+			card.add_child(title)
+
+			var desc := Label.new()
+			desc.text = TraitPool.desc(options[i])
+			desc.position = Vector2(14, 70)
+			desc.size = Vector2(card_width - 28, 56)
+			desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			desc.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			desc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			desc.add_theme_font_override("font", font)
+			desc.add_theme_font_size_override("font_size", 15)
+			desc.add_theme_color_override("font_color", Color(0.32, 0.27, 0.23))
+			card.add_child(desc)
 
 		var btn := Button.new()
 		btn.text = "更换 %d" % swap_charges
