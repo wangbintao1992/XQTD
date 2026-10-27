@@ -12,11 +12,9 @@ var enemies_root: Node
 func _ready() -> void:
 	var body := get_node_or_null("Body") as Sprite2D
 	if body and body.texture:
-		var s: Vector2 = body.texture.get_size()
-		body.scale = Vector2(
-			TOWER_SIZE / maxf(1.0, s.x),
-			TOWER_SIZE / maxf(1.0, s.y)
-		)
+		var tex := body.texture
+		body.texture = TextureUtil.atlas(tex)
+		body.scale = TextureUtil.scale_for(tex, TOWER_SIZE)
 
 
 func setup(enemies_root_: Node) -> void:

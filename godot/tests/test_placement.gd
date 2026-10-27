@@ -33,3 +33,41 @@ func run(t) -> void:
 	enemies_root.free()
 	qi.free()
 	tp.free()
+
+	# 输入路径：卡片上原地点击不应放塔；拖到棋盘内才放
+	var tp2 = preload("res://scripts/towers/tower_placement.gd").new()
+	t.root.add_child(tp2)
+	var towers2 := Node2D.new()
+	var enemies2 := Node2D.new()
+	t.root.add_child(towers2)
+	t.root.add_child(enemies2)
+	var qi2 = preload("res://scripts/autoload/qi.gd").new()
+	qi2.reset()
+	tp2.setup(g, towers2, enemies2, qi2)
+
+	var scene = preload("res://scenes/towers/tower_che.tscn")
+	var tex = load("res://art/qz/b_che.png")
+	var card_pos := Vector2(105, 170)
+	tp2.begin_drag(scene, 50, tex, card_pos)
+	var ev := InputEventMouseButton.new()
+	ev.button_index = MOUSE_BUTTON_LEFT
+	ev.pressed = false
+	ev.position = card_pos
+	tp2._input(ev)
+	t.eq(qi2.value, 100, "click on card does not spend")
+	t.eq(towers2.get_child_count(), 0, "click on card does not place")
+
+	var target_screen := Coords.to_screen(Vector2(-200, 100))
+	tp2.begin_drag(scene, 50, tex, target_screen)
+	ev = InputEventMouseButton.new()
+	ev.button_index = MOUSE_BUTTON_LEFT
+	ev.pressed = false
+	ev.position = target_screen
+	tp2._input(ev)
+	t.eq(qi2.value, 50, "valid drop spends 50")
+	t.eq(towers2.get_child_count(), 1, "valid drop places 1")
+
+	tp2.free()
+	towers2.free()
+	enemies2.free()
+	qi2.free()

@@ -6,6 +6,8 @@ Godot **4.7.2 stable** + GDScript。Cocos Creator 版本的独立迁移分支，
 
 需要 Godot 4.7.2（`godot --version` 应包含 `4.7.2.stable`）。
 
+> 本机把 Godot 装在 `~/.local/bin/godot`；如果 `godot` 不在 `PATH`，把下面的 `godot` 换成 `~/.local/bin/godot`，或把该目录加入 `PATH`。
+
 ```bash
 # 首次导入（生成 .godot/ 与导入缓存）
 godot --headless --path godot --import

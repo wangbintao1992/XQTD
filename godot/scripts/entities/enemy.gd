@@ -51,12 +51,8 @@ func setup(kind_: Dictionary, graph: PathGraph, edge: int, dir: int, speed: floa
 	_hit = get_node_or_null("HitEffect")
 
 	if _body and kind_.has("texture"):
-		_body.texture = kind_.texture
-		var tex_size: Vector2 = kind_.texture.get_size()
-		_body.scale = Vector2(
-			TARGET_SIZE / maxf(1.0, tex_size.x),
-			TARGET_SIZE / maxf(1.0, tex_size.y)
-		)
+		_body.texture = TextureUtil.atlas(kind_.texture)
+		_body.scale = TextureUtil.scale_for(kind_.texture, TARGET_SIZE)
 	_refresh_overlay()
 
 	walker = get_node_or_null("PathWalker") as PathWalker
@@ -84,13 +80,11 @@ func _refresh_overlay() -> void:
 		_overlay.visible = false
 		return
 	var idx: int = mini(lost - 1, OVERLAY_TEXTURES.size() - 1)
-	_overlay.texture = OVERLAY_TEXTURES[idx]
+	_overlay.texture = TextureUtil.atlas(OVERLAY_TEXTURES[idx])
 	_overlay.visible = true
-	var tex_size: Vector2 = OVERLAY_TEXTURES[idx].get_size()
-	var target := TARGET_SIZE * OVERLAY_SCALE
-	_overlay.scale = Vector2(
-		target / maxf(1.0, tex_size.x),
-		target / maxf(1.0, tex_size.y)
+	_overlay.scale = TextureUtil.scale_for(
+		OVERLAY_TEXTURES[idx],
+		TARGET_SIZE * OVERLAY_SCALE
 	)
 
 

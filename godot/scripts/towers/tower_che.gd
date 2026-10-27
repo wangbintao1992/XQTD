@@ -21,6 +21,8 @@ const DIRS := [
 @export var auto_fire := true
 
 var _timer := 0.0
+var _windup := 0.0
+var _winding := false
 
 
 func _ready() -> void:
@@ -31,13 +33,28 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if not auto_fire:
 		return
+	if _winding:
+		_windup -= delta
+		if _windup <= 0.0:
+			_winding = false
+			_cast()
+		return
+
 	_timer += delta
 	if _timer >= fire_interval:
 		_timer = 0.0
-		fire()
+		if windup_time > 0.0:
+			_windup = windup_time
+			_winding = true
+		else:
+			_cast()
 
 
 func fire() -> int:
+	return _cast()
+
+
+func _cast() -> int:
 	var origin := global_position if is_inside_tree() else position
 	var hits := 0
 	for d in DIRS:

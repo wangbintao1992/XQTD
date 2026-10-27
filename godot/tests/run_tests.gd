@@ -12,6 +12,8 @@ const TEST_PATHS := [
 	"res://tests/test_placement.gd",
 	"res://tests/test_tower_che.gd",
 	"res://tests/test_run_controller.gd",
+	"res://tests/test_ui_layout.gd",
+	"res://tests/test_texture_util.gd",
 ]
 
 

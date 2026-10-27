@@ -17,6 +17,7 @@ var graph: PathGraph
 var towers_root: Node
 var enemies_root: Node
 var qi: Object
+var toast: Object
 
 var _ghost: Sprite2D
 var _drag_scene: PackedScene
@@ -27,6 +28,8 @@ var _dragging := false
 func _ready() -> void:
 	if qi == null:
 		qi = get_node_or_null("/root/Qi")
+	if toast == null:
+		toast = get_node_or_null("/root/Toast")
 
 
 func setup(
@@ -42,24 +45,28 @@ func setup(
 		qi = qi_
 
 
-func begin_drag(scene: PackedScene, cost: int, texture: Texture2D) -> void:
+func begin_drag(
+	scene: PackedScene,
+	cost: int,
+	texture: Texture2D,
+	screen_pos: Vector2 = Vector2.INF
+) -> void:
 	cancel_drag()
 	_drag_scene = scene
 	_drag_cost = cost
 	_dragging = true
 
 	_ghost = Sprite2D.new()
-	_ghost.texture = texture
+	_ghost.texture = TextureUtil.atlas(texture)
 	if texture:
-		var s: Vector2 = texture.get_size()
-		_ghost.scale = Vector2(
-			TOWER_SIZE / maxf(1.0, s.x),
-			TOWER_SIZE / maxf(1.0, s.y)
-		)
+		_ghost.scale = TextureUtil.scale_for(texture, TOWER_SIZE)
 	_ghost.modulate.a = 170.0 / 255.0
 	_ghost.z_index = 100
 	towers_root.add_child(_ghost)
-	_ghost.position = get_viewport().get_mouse_position()
+	if screen_pos.is_finite():
+		_ghost.position = screen_pos
+	elif is_inside_tree():
+		_ghost.position = get_viewport().get_mouse_position()
 
 
 func _input(event: InputEvent) -> void:
@@ -73,20 +80,38 @@ func _input(event: InputEvent) -> void:
 
 	if event is InputEventMouseButton and not event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		var design: Vector2 = Coords.screen_to_design(event.position)
+		if not is_inside_area(design):
+			_show_toast("只能放在棋盘内")
+			cancel_drag()
+			if is_inside_tree():
+				get_viewport().set_input_as_handled()
+			return
+
 		var target = resolve_drop(design)
 		if target == null:
-			Toast.show(describe_failure(design))
+			_show_toast(describe_failure(design))
 		else:
 			place(_drag_scene, target, _drag_cost)
 		cancel_drag()
-		get_viewport().set_input_as_handled()
+		if is_inside_tree():
+			get_viewport().set_input_as_handled()
 
 
 func cancel_drag() -> void:
 	_dragging = false
 	if _ghost and is_instance_valid(_ghost):
+		var parent := _ghost.get_parent()
+		if parent:
+			parent.remove_child(_ghost)
 		_ghost.queue_free()
 	_ghost = null
+
+
+func _show_toast(msg: String) -> void:
+	if toast and toast.has_method("show"):
+		toast.show(msg)
+	else:
+		print("[TowerPlacement] ", msg)
 
 
 func can_place(pos: Vector2) -> bool:

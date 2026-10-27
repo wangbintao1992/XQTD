@@ -1,6 +1,18 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/game_over.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
+bg_color = Color(0.933, 0.898, 0.835, 0.98)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.275, 0.243, 0.212, 0.86)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
 
 [node name="GameOver" type="CanvasLayer"]
 layer = 20
@@ -32,6 +44,7 @@ offset_left = 320.0
 offset_top = 174.0
 offset_right = 960.0
 offset_bottom = 546.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_1")
 
 [node name="Title" type="Label" parent="Root/Panel"]
 layout_mode = 0

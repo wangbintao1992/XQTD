@@ -40,6 +40,10 @@ func run(t) -> void:
 	root.add_child(enemy)
 	enemy.setup(kind, g, e, 1, 100.0)
 	enemy.walker.set_process(false)
+	var body := enemy.get_node("Body") as Sprite2D
+	t.check(body.texture is AtlasTexture, "enemy body trimmed")
+	var used: Vector2 = Vector2(body.texture.region.size) if body.texture is AtlasTexture else body.texture.get_size()
+	t.approx(used.x * body.scale.x, 43.4, 0.1, "enemy body width")
 	enemy.take_damage(2)
 	t.eq(enemy.hp, 1, "hp after 2")
 	var dead := [false]

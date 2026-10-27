@@ -36,6 +36,7 @@ offset_left = 308.0
 offset_top = 376.0
 offset_right = 608.0
 offset_bottom = 484.0
+ignore_texture_size = true
 texture_normal = ExtResource("3")
 
 [node name="Label" type="Label" parent="Root/BtnEndless"]
@@ -58,6 +59,7 @@ offset_left = 672.0
 offset_top = 376.0
 offset_right = 972.0
 offset_bottom = 484.0
+ignore_texture_size = true
 texture_normal = ExtResource("4")
 
 [node name="Label" type="Label" parent="Root/BtnLevel"]

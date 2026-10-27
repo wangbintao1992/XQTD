@@ -16,7 +16,8 @@ signal unavailable(message: String)
 func _ready() -> void:
 	var icon := get_node_or_null("Icon") as TextureRect
 	if icon and tower_texture:
-		icon.texture = tower_texture
+		icon.texture = TextureUtil.atlas(tower_texture)
+		icon.stretch_mode = TextureRect.STRETCH_SCALE
 	var label := get_node_or_null("Name") as Label
 	if label:
 		label.text = display_name

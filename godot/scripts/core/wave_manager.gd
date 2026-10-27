@@ -15,7 +15,7 @@ var wave := 1
 var counting := false
 var countdown := 0.0
 
-var spawner: PathSpawner
+var spawner
 var picker: Node
 var session: Object
 var lives: Object
@@ -29,7 +29,7 @@ func _ready() -> void:
 
 
 func setup(
-	spawner_: PathSpawner,
+	spawner_,
 	picker_: Node = null,
 	session_: Object = null,
 	lives_: Object = null
@@ -87,7 +87,7 @@ func _process(delta: float) -> void:
 		_emit_progress()
 		return
 
-	if spawner.total_count() > 0 and spawner.alive_count() <= 0:
+	if spawner.total_count() >= spawner.enemy_count and spawner.alive_count() <= 0:
 		counting = true
 		countdown = round_gap
 	_emit_progress()
