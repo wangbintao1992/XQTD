@@ -25,13 +25,26 @@ const EXPLOSION_TEXTURE := preload("res://art/moban.png")
 @export var auto_fire := true
 
 var _timer := 0.0
+var base_damage := 3
+var base_range := 520.0
+var base_interval := 1.8
 var _windup := 0.0
 var _winding := false
 
 
 func _ready() -> void:
+	base_damage = damage
+	base_range = attack_range
+	base_interval = fire_interval
 	super._ready()
+	apply_traits()
 	_timer = fire_interval * 0.5
+
+
+func apply_traits() -> void:
+	damage = maxi(1, int(round(float(base_damage) * trait_damage_mult())))
+	attack_range = base_range * trait_range_mult()
+	fire_interval = base_interval * trait_interval_mult()
 
 
 func _process(delta: float) -> void:
@@ -71,7 +84,8 @@ func _fire_dir(origin: Vector2, dir: Vector2) -> int:
 	if cands.is_empty():
 		return 0
 
-	if require_screen:
+	var free_cannon := RunStateData.has("free_cannon")
+	if require_screen and not free_cannon:
 		var screen = cands[0].node
 		var target = null
 		for i in range(1, cands.size()):
@@ -92,7 +106,7 @@ func _fire_dir(origin: Vector2, dir: Vector2) -> int:
 			break
 	if first_enemy == null:
 		return 0
-	_damage(first_enemy, direct_damage)
+	_damage(first_enemy, damage if free_cannon else direct_damage)
 	_explode(first_enemy.global_position)
 	return 1
 
@@ -125,6 +139,7 @@ func _damage(node: Node, amount: int) -> void:
 	if node == null or not node.has_method("take_damage"):
 		return
 	node.take_damage(amount)
+	spread_hit(node, amount)
 	var pause = node.get_node_or_null("HitPause")
 	if pause and hit_pause_time > 0.0:
 		pause.request_pause(hit_pause_time)

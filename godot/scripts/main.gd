@@ -42,9 +42,18 @@ func _ready() -> void:
 		)
 		card.unavailable.connect(func(msg: String): Toast.show(msg))
 
+	if RunStateData.instance:
+		RunStateData.instance.traits_changed.connect(_refresh_tower_traits)
+
 	hud.set_wave(wave.wave, wave.max_wave)
 	hud.set_progress(0.0)
 
 	if auto_start:
 		GameSession.start()
 		wave.start_run()
+
+
+func _refresh_tower_traits() -> void:
+	for tower in towers.get_children():
+		if tower.has_method("apply_traits"):
+			tower.apply_traits()

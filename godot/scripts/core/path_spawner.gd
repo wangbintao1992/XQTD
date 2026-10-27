@@ -72,6 +72,10 @@ func total_count() -> int:
 	return spawned_count
 
 
+func reward_for(base: int) -> int:
+	return int(round(float(base) * (1.5 if RunStateData.has("qi_boost") else 1.0)))
+
+
 func alive_count() -> int:
 	return enemies_root.get_child_count() if enemies_root else 0
 
@@ -117,8 +121,7 @@ func spawn_one() -> void:
 
 	if qi:
 		enemy.died.connect(func(k: Dictionary):
-			var reward := int(round(float(k.qi_reward) * (1.5 if RunStateData.has("qi_boost") else 1.0)))
-			qi.earn(reward)
+			qi.earn(reward_for(int(k.qi_reward)))
 		)
 	if lives:
 		enemy.reached_base.connect(func(cost: int): lives.lose(cost))

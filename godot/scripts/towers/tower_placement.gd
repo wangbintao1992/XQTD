@@ -116,12 +116,16 @@ func _show_toast(msg: String) -> void:
 		print("[TowerPlacement] ", msg)
 
 
+func effective_cost() -> int:
+	return 0 if RunStateData.has("free_place") else COST
+
+
 func can_place(pos: Vector2) -> bool:
 	if not is_inside_area(pos):
 		return false
 	if is_too_close_to_path(pos):
 		return false
-	if qi and not qi.can_afford(COST):
+	if qi and not qi.can_afford(effective_cost()):
 		return false
 	return true
 
@@ -190,6 +194,8 @@ func is_too_close_to_path(pos: Vector2) -> bool:
 func place(scene: PackedScene, pos: Vector2, cost: int = COST):
 	if scene == null:
 		return null
+	if RunStateData.has("free_place"):
+		cost = 0
 	if qi and not qi.can_afford(cost):
 		return null
 
@@ -206,8 +212,9 @@ func place(scene: PackedScene, pos: Vector2, cost: int = COST):
 
 
 func describe_failure(pos: Vector2) -> String:
-	if qi and not qi.can_afford(COST):
-		return "棋气不足，需要 %d" % COST
+	var cost := effective_cost()
+	if qi and not qi.can_afford(cost):
+		return "棋气不足，需要 %d" % cost
 	if not is_inside_area(snap(pos)):
 		return "只能放在棋盘内"
 	if is_too_close_to_path(snap(pos)):

@@ -42,3 +42,35 @@ func _on_click_area_input_event(
 
 func fire() -> int:
 	return 0
+
+
+func apply_traits() -> void:
+	pass
+
+
+func trait_damage_mult() -> float:
+	return 1.5 if RunStateData.has("kumou") else 1.0
+
+
+func trait_range_mult() -> float:
+	return 1.25 if RunStateData.has("range_plus") else 1.0
+
+
+func trait_interval_mult() -> float:
+	return 0.75 if RunStateData.has("cooldown_halve") else 1.0
+
+
+func spread_hit(source: Node, amount: int) -> void:
+	if not RunStateData.has("splash_hit") or enemies_root == null:
+		return
+	if not is_instance_valid(source):
+		return
+	var dmg := maxi(1, int(round(float(amount) * 0.3)))
+	var center: Vector2 = source.global_position
+	for enemy in enemies_root.get_children():
+		if enemy == source or not is_instance_valid(enemy):
+			continue
+		if not enemy.has_method("take_damage"):
+			continue
+		if (enemy.global_position - center).length() <= 40.0:
+			enemy.take_damage(dmg)

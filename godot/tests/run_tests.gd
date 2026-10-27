@@ -23,6 +23,7 @@ const TEST_PATHS := [
 	"res://tests/test_trait_pool.gd",
 	"res://tests/test_card_picker_traits.gd",
 	"res://tests/test_endless.gd",
+	"res://tests/test_traits_effects.gd",
 ]
 
 

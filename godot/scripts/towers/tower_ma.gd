@@ -15,13 +15,26 @@ const EXPLOSION_TEXTURE := preload("res://art/moban.png")
 @export var auto_fire := true
 
 var _timer := 0.0
+var base_damage := 2
+var base_range := 210.0
+var base_interval := 0.8
 var _windup := 0.0
 var _winding := false
 
 
 func _ready() -> void:
+	base_damage = damage
+	base_range = attack_range
+	base_interval = fire_interval
 	super._ready()
+	apply_traits()
 	_timer = fire_interval * 0.5
+
+
+func apply_traits() -> void:
+	damage = maxi(1, int(round(float(base_damage) * trait_damage_mult())))
+	attack_range = base_range * trait_range_mult()
+	fire_interval = base_interval * trait_interval_mult()
 
 
 func _process(delta: float) -> void:
@@ -87,6 +100,8 @@ func _leg_point(target: Node) -> Vector2:
 
 
 func _blocker_for(target: Node):
+	if RunStateData.has("free_horse"):
+		return null
 	if enemies_root == null:
 		return null
 	var leg := _leg_point(target)
@@ -108,6 +123,7 @@ func _origin() -> Vector2:
 
 func _damage(node: Node) -> void:
 	node.take_damage(damage)
+	spread_hit(node, damage)
 	var pause = node.get_node_or_null("HitPause")
 	if pause and hit_pause_time > 0.0:
 		pause.request_pause(hit_pause_time)

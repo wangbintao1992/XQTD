@@ -21,13 +21,33 @@ const DIRS := [
 @export var auto_fire := true
 
 var _timer := 0.0
+var base_damage := 1
+var base_range := 460.0
+var base_interval := 1.2
 var _windup := 0.0
 var _winding := false
 
 
 func _ready() -> void:
+	base_damage = damage
+	base_range = attack_range
+	base_interval = fire_interval
 	super._ready()
+	apply_traits()
 	_timer = fire_interval * 0.5
+
+
+func apply_traits() -> void:
+	damage = maxi(1, int(round(float(base_damage) * trait_damage_mult())))
+	attack_range = base_range * trait_range_mult()
+	fire_interval = base_interval * trait_interval_mult()
+
+
+func trait_damage_mult() -> float:
+	var m := super.trait_damage_mult()
+	if RunStateData.has("double_chariot"):
+		m *= 2.0
+	return m
 
 
 func _process(delta: float) -> void:
@@ -76,6 +96,7 @@ func _raycast_once(origin: Vector2, dir: Vector2) -> int:
 		if _distance_to_segment(pos, origin, end) > hit_radius:
 			continue
 		enemy.take_damage(damage)
+		spread_hit(enemy, damage)
 		var pause = enemy.get_node_or_null("HitPause")
 		if pause and hit_pause_time > 0.0:
 			pause.request_pause(hit_pause_time)
