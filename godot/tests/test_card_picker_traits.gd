@@ -19,6 +19,12 @@ func run(t) -> void:
 			found = true
 	t.check(found, "card shows trait title")
 
+	var swap_visible := false
+	for child in card.get_children():
+		if child is Button and child.visible:
+			swap_visible = true
+	t.check(not swap_visible, "swap hidden in trait mode")
+
 	cp.pick(1)
 	t.eq(cp.selected_trait, "free_cannon", "selected trait")
 	cp.close()

@@ -27,11 +27,14 @@ func reset() -> void:
 	traits_changed.emit()
 
 
-func add_trait(id: String) -> void:
+func add_trait(id: String) -> bool:
 	if id == "" or traits.has(id):
-		return
+		return false
+	if not TraitPool.TRAITS.has(id):
+		return false
 	traits.append(id)
 	traits_changed.emit()
+	return true
 
 
 func has_trait(id: String) -> bool:
@@ -41,6 +44,3 @@ func has_trait(id: String) -> bool:
 static func has(id: String) -> bool:
 	return instance != null and instance.traits.has(id)
 
-
-static func count() -> int:
-	return instance.traits.size() if instance else 0

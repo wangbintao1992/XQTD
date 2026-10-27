@@ -64,8 +64,6 @@ func setup_for_test(qi_: Object, lives_: Object, session_: Object) -> void:
 
 
 func reset_run() -> void:
-	if RunStateData.instance:
-		RunStateData.instance.reset()
 	if game_over:
 		game_over.hide_popup()
 	if action_menu:
@@ -90,12 +88,17 @@ func reset_run() -> void:
 	if wave:
 		wave.reset()
 		wave.set_process(true)
+	if RunStateData.instance:
+		RunStateData.instance.reset()
 	if spawner:
 		spawner.deploy()
 		spawner.reset_run_counter()
 		spawner.set_process(true)
 	if hud:
-		hud.set_wave(1, wave.max_wave if wave else 5)
+		var shown_max := 5
+		if wave:
+			shown_max = 0 if wave.endless else wave.max_wave
+		hud.set_wave(1, shown_max)
 		hud.set_progress(0.0)
 		hud.set_tip("")
 

@@ -76,6 +76,14 @@ func reward_for(base: int) -> int:
 	return int(round(float(base) * (1.5 if RunStateData.has("qi_boost") else 1.0)))
 
 
+func debug_finish_wave() -> void:
+	spawned_count = enemy_count
+	if enemies_root:
+		for child in enemies_root.get_children():
+			enemies_root.remove_child(child)
+			child.queue_free()
+
+
 func alive_count() -> int:
 	return enemies_root.get_child_count() if enemies_root else 0
 

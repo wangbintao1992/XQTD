@@ -143,9 +143,11 @@ func _on_pick_done() -> void:
 		if v != null:
 			id = str(v)
 	if id != "":
+		var added := false
 		if RunStateData.instance:
-			RunStateData.instance.add_trait(id)
-		TraitPool.apply_on_pick(id)
+			added = RunStateData.instance.add_trait(id)
+		if added:
+			TraitPool.apply_on_pick(id)
 	counting = true
 	countdown = round_gap
 

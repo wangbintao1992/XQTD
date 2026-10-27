@@ -35,6 +35,7 @@ class FakePicker:
 
 
 func run(t) -> void:
+	var prev = RunStateData.instance
 	var rs = preload("res://scripts/autoload/run_state.gd").new()
 	rs.reset()
 	RunStateData.instance = rs
@@ -54,6 +55,7 @@ func run(t) -> void:
 	t.eq(wm.wave, 1, "wave 1")
 	t.eq(fs.enemy_count, 20, "wave1 count")
 	t.approx(fs.hp_mult, 1.0, 0.001, "wave1 hp")
+	t.approx(fs.speed_mult, 1.0, 0.001, "wave1 speed")
 
 	fs.total = 20
 	fs.alive = 0
@@ -70,6 +72,7 @@ func run(t) -> void:
 	t.eq(wm.wave, 2, "wave 2")
 	t.eq(fs.enemy_count, 23, "wave2 count grows")
 	t.approx(fs.hp_mult, 1.1, 0.001, "wave2 hp grows")
+	t.approx(fs.speed_mult, 1.0, 0.001, "wave2 speed")
 	t.eq(rs.wave, 2, "run state wave synced")
 
 	wm.wave = 5
@@ -78,9 +81,29 @@ func run(t) -> void:
 	wm._process(0.0)
 	t.eq(wm.wave, 6, "endless goes past wave 5")
 	t.check(fs.enemy_count > 23, "wave6 count keeps growing")
+	t.approx(fs.speed_mult, 1.02, 0.001, "wave6 speed grows")
 
 	t.approx(wm.progress_with(100, 50), 0.5, 0.001, "endless progress is per-wave")
 
+	# 全词条已拥有时，重复选到一次性词条不应重复触发
+	for id in TraitPool.ids():
+		rs.add_trait(id)
+	var qi_node = Engine.get_main_loop().root.get_node_or_null("Qi")
+	var lives_node = Engine.get_main_loop().root.get_node_or_null("Lives")
+	var qi_before: int = qi_node.value if qi_node else 0
+	var lives_before: int = lives_node.value if lives_node else 0
+	wm.picking = true
+	fp.selected_trait = "qi_gift"
+	wm._on_pick_done()
+	fp.selected_trait = "kumou"
+	wm.picking = true
+	wm._on_pick_done()
+	if qi_node:
+		t.eq(qi_node.value, qi_before, "duplicate qi_gift does not earn")
+	if lives_node:
+		t.eq(lives_node.value, lives_before, "duplicate kumou does not lose lives")
+	t.eq(rs.traits.size(), TraitPool.ids().size(), "traits remain unique")
+
 	wm.free()
 	rs.free()
-	RunStateData.instance = null
+	RunStateData.instance = prev

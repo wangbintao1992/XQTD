@@ -41,7 +41,7 @@ const TRAITS := {
 		"desc": "牺牲 5 点生命，全体塔伤害 +50%",
 	},
 	"splash_hit": {
-		"title": "连环计",
+		"title": "连环溅射",
 		"desc": "攻击附带 30% 范围溅射",
 	},
 }

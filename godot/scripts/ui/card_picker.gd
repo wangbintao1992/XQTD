@@ -217,6 +217,8 @@ func _build() -> void:
 		card.add_child(btn)
 
 		btn.pressed.connect(func(): swap(int(card.get_meta("slot_index"))))
+		if options.size() == 3:
+			btn.visible = false
 		card.gui_input.connect(func(ev):
 			if ev is InputEventMouseButton and ev.pressed:
 				pick(int(card.get_meta("slot_index")))

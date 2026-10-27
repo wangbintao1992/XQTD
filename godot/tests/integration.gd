@@ -1,7 +1,6 @@
 extends Node
 
-## 集成冒烟：加载主场景 → 开局 → 出兵 → 放三种塔 → 点塔菜单/卖出 → 天气 → 选卡 → 结束 → 重开。
-## 运行：godot --headless --path godot --fixed-fps 60 res://tests/integration.tscn
+## 集成冒烟：开局 → 出兵 → 真实选词条链路走 5 波 → 词条生效/波次 6 → 放塔/菜单/卖出 → 天气 → 结束 → 重开。
 
 func _ready() -> void:
 	var main = load("res://scenes/main.tscn").instantiate()
@@ -22,29 +21,43 @@ func _ready() -> void:
 	var count: int = enemies.get_child_count() if enemies else -1
 	print("INTEGRATION enemies=", count)
 
+	var wave = main.get_node_or_null("WaveManager")
+	var spawner = main.get_node_or_null("PathSpawner")
+	var card_picker = main.get_node_or_null("CardPicker")
 	var placement = main.get_node_or_null("TowerPlacement")
+
 	Qi.earn(300)
 	var spot = placement.resolve_drop(Vector2(-200, 100)) if placement else null
 	var che = placement.place(load("res://scenes/towers/tower_che.tscn"), spot) if spot != null else null
-	var pao = placement.place(load("res://scenes/towers/tower_pao.tscn"), spot) if spot != null else null
-	var ma = placement.place(load("res://scenes/towers/tower_ma.tscn"), spot) if spot != null else null
-	var placed_ok: bool = che != null and pao != null and ma != null \
-		and main.get_node("Towers").get_child_count() >= 3
-	print("INTEGRATION towers=", placed_ok)
+	var initial_range: float = che.attack_range if che else 0.0
+	print("INTEGRATION towers=", che != null)
 
-	var wave = main.get_node_or_null("WaveManager")
-	var endless_ok: bool = wave != null and wave.endless
-	print("INTEGRATION endless=", endless_ok)
+	# 真实选词条链路：清波 → 选卡 → 下一波，连续 5 次
+	for i in 5:
+		spawner.debug_finish_wave()
+		wave._process(0.0)
+		if card_picker.is_picking:
+			if i == 0:
+				card_picker.options[0] = "range_plus"
+			card_picker.pick(0)
+			card_picker._process(0.5)
+		wave._process(3.1)
 
-	var rs_ok := RunStateData.instance != null
-	if RunStateData.instance:
-		RunStateData.instance.add_trait("free_cannon")
-		rs_ok = RunStateData.has("free_cannon")
+	var pipeline_ok: bool = RunStateData.has("range_plus") \
+		and che != null and absf(che.attack_range - initial_range * 1.25) < 0.5
+	var endless_ok: bool = wave != null and wave.wave >= 6
+	print("INTEGRATION pipeline=", pipeline_ok, " endless=", endless_ok, " wave=", wave.wave)
+
+	var rs_ok: bool = RunStateData.instance != null and RunStateData.has("range_plus")
 	print("INTEGRATION traits=", rs_ok)
 
 	var hud = main.get_node_or_null("HUD")
-	var hud_ok: bool = hud != null and hud.trait_label.text.find(TraitPool.title("free_cannon")) >= 0
+	var hud_ok: bool = hud != null and hud.trait_label.text.find(TraitPool.title("range_plus")) >= 0
 	print("INTEGRATION hud_traits=", hud_ok)
+
+	var pao = placement.place(load("res://scenes/towers/tower_pao.tscn"), spot) if spot != null else null
+	var ma = placement.place(load("res://scenes/towers/tower_ma.tscn"), spot) if spot != null else null
+	print("INTEGRATION all_towers=", che != null and pao != null and ma != null)
 
 	var menu = main.get_node_or_null("TowerActionMenu")
 	if pao:
@@ -64,12 +77,11 @@ func _ready() -> void:
 	var weather_ok: bool = weather != null and weather.layers["rain"][0].visible
 	print("INTEGRATION weather=", weather_ok)
 
-	var picker = main.get_node_or_null("CardPicker")
 	var picked := [0]
-	if picker:
-		picker.open_with_timeout(0.05, func(): picked[0] += 1)
-		picker._process(0.1)
-		picker._process(0.5)
+	if card_picker:
+		card_picker.open_with_timeout(0.05, func(): picked[0] += 1)
+		card_picker._process(0.1)
+		card_picker._process(0.5)
 	print("INTEGRATION picker=", picked[0] == 1)
 
 	Lives.lose(100)
@@ -87,7 +99,6 @@ func _ready() -> void:
 		and RunStateData.instance != null and RunStateData.instance.traits.size() == 0
 	print("INTEGRATION reset=", reset_ok)
 
-	var ok: bool = count > 0 and placed_ok and menu_ok and sell_ok \
-		and weather_ok and picked[0] == 1 and over_ok and reset_ok \
-		and endless_ok and rs_ok and hud_ok
+	var ok: bool = count > 0 and pipeline_ok and endless_ok and rs_ok and hud_ok \
+		and menu_ok and sell_ok and weather_ok and picked[0] == 1 and over_ok and reset_ok
 	get_tree().quit(0 if ok else 1)

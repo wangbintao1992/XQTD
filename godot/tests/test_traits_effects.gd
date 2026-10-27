@@ -9,6 +9,7 @@ class FakeEnemy extends Node2D:
 
 
 func run(t) -> void:
+	var prev = RunStateData.instance
 	var rs = preload("res://scripts/autoload/run_state.gd").new()
 	rs.reset()
 	RunStateData.instance = rs
@@ -88,7 +89,7 @@ func run(t) -> void:
 	t.eq(che.damage, 3, "kumou 1.5x")
 
 	rs.free()
-	RunStateData.instance = null
+	RunStateData.instance = prev
 	enemies.free()
 	towers.free()
 	qi.free()
