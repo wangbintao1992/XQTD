@@ -1,0 +1,30 @@
+extends Node2D
+
+## 主场景接线：创建路径图，把 spawner / wave / HUD 串起来。
+## `auto_start` 只用于本地调试；正式流程由 HomeMenu 调 RunController。
+
+@export var auto_start := false
+
+@onready var enemies: Node2D = $Enemies
+@onready var towers: Node2D = $Towers
+@onready var spawner: PathSpawner = $PathSpawner
+@onready var wave: WaveManager = $WaveManager
+@onready var hud: Hud = $HUD
+
+var graph: PathGraph
+
+
+func _ready() -> void:
+	graph = PathGraph.new()
+	spawner.setup(graph, enemies, Qi, Lives, GameSession)
+	wave.setup(spawner, null, GameSession, Lives)
+
+	wave.wave_changed.connect(func(w: int): hud.set_wave(w, wave.max_wave))
+	wave.progress_changed.connect(func(p: float): hud.set_progress(p))
+
+	hud.set_wave(wave.wave, wave.max_wave)
+	hud.set_progress(0.0)
+
+	if auto_start:
+		GameSession.start()
+		wave.start_run()
