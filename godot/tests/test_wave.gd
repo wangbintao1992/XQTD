@@ -19,6 +19,18 @@ class FakeSpawner:
 		alive = 0
 
 
+class FakePicker:
+	var opened := 0
+	var cb: Callable
+
+	func open_with_timeout(_seconds: float, done: Callable) -> void:
+		opened += 1
+		cb = done
+
+	func close() -> void:
+		pass
+
+
 func run(t) -> void:
 	var g = preload("res://scripts/core/path_graph.gd").new()
 	var root := Node2D.new()
@@ -61,6 +73,24 @@ func run(t) -> void:
 	t.eq(wm2.wave, 2, "wave advanced")
 	t.eq(fs.deployed, 1, "deployed next wave")
 	wm2.free()
+
+	# 有选卡时：清空先开选卡，选完再倒计时
+	var wm3 = preload("res://scripts/core/wave_manager.gd").new()
+	var fs3 := FakeSpawner.new()
+	var fp := FakePicker.new()
+	wm3.setup(fs3, fp, null, null)
+	wm3.reset()
+	fs3.total = 10
+	fs3.alive = 0
+	wm3._process(0.0)
+	t.check(wm3.picking, "picker opened on clear")
+	t.eq(fp.opened, 1, "picker opened once")
+	fp.cb.call()
+	t.check(not wm3.picking, "picking done")
+	t.check(wm3.counting, "counting after pick")
+	wm3._process(3.1)
+	t.eq(wm3.wave, 2, "wave advanced after pick")
+	wm3.free()
 
 	root.free()
 	qi.free()

@@ -10,13 +10,15 @@ signal progress_changed(p: float)
 var enemies_per_round := 100
 var max_wave := 5
 var round_gap := 3.0
+var pick_time := 10.0
 
 var wave := 1
 var counting := false
 var countdown := 0.0
+var picking := false
 
 var spawner
-var picker: Node
+var picker
 var session: Object
 var lives: Object
 
@@ -30,7 +32,7 @@ func _ready() -> void:
 
 func setup(
 	spawner_,
-	picker_: Node = null,
+	picker_ = null,
 	session_: Object = null,
 	lives_: Object = null
 ) -> void:
@@ -44,6 +46,9 @@ func setup(
 
 
 func reset() -> void:
+	if picker and picker.has_method("close"):
+		picker.close()
+	picking = false
 	wave = 1
 	counting = false
 	countdown = 0.0
@@ -75,6 +80,8 @@ func _process(delta: float) -> void:
 		return
 	if spawner == null:
 		return
+	if picking:
+		return
 
 	if counting:
 		countdown -= delta
@@ -88,8 +95,16 @@ func _process(delta: float) -> void:
 		return
 
 	if spawner.total_count() >= spawner.enemy_count and spawner.alive_count() <= 0:
-		counting = true
-		countdown = round_gap
+		if picker and picker.has_method("open_with_timeout"):
+			picking = true
+			picker.open_with_timeout(pick_time, func():
+				picking = false
+				counting = true
+				countdown = round_gap
+			)
+		else:
+			counting = true
+			countdown = round_gap
 	_emit_progress()
 
 

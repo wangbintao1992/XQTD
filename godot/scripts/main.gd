@@ -12,6 +12,7 @@ extends Node2D
 @onready var hud: Hud = $HUD
 @onready var placement: TowerPlacement = $TowerPlacement
 @onready var sidebar: Sidebar = $Sidebar
+@onready var card_picker: CardPicker = $CardPicker
 
 var graph: PathGraph
 
@@ -19,7 +20,7 @@ var graph: PathGraph
 func _ready() -> void:
 	graph = PathGraph.new()
 	spawner.setup(graph, enemies, Qi, Lives, GameSession)
-	wave.setup(spawner, null, GameSession, Lives)
+	wave.setup(spawner, card_picker, GameSession, Lives)
 	placement.setup(graph, towers, enemies, Qi)
 
 	wave.wave_changed.connect(func(w: int): hud.set_wave(w, wave.max_wave))

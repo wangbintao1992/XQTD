@@ -16,6 +16,7 @@ const TEST_PATHS := [
 	"res://tests/test_texture_util.gd",
 	"res://tests/test_tower_pao.gd",
 	"res://tests/test_tower_ma.gd",
+	"res://tests/test_card_picker.gd",
 ]
 
 
