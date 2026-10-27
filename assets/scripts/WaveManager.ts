@@ -8,8 +8,23 @@ import {
     UITransform,
 } from 'cc';
 import { EnemySpawner } from './EnemySpawner';
+import { GameSession } from './GameSession';
+import { LivesManager } from './LivesManager';
+import { PathNetworkRunner } from './PathNetworkRunner';
 
 const { ccclass, property } = _decorator;
+
+/** "出兵器"要提供的一组接口 —— EnemySpawner 和 PathNetworkRunner 都有。 */
+interface RoundSpawner {
+    /** 每轮出几个（可写） */
+    count: number;
+    /** 本轮已出的总数 */
+    readonly totalCount: number;
+    /** 场上还活着的数量 */
+    readonly aliveCount: number;
+    /** 开新一轮 */
+    deploy(): void;
+}
 
 /**
  * 波次管理：
@@ -74,7 +89,7 @@ export class WaveManager extends Component {
     private picking = false;
     private countdown = 0;
     private shownProgress = 0;        // 进度条当前显示值（平滑用）
-    private spawner: EnemySpawner | null = null;
+    private spawner: RoundSpawner | null = null;
     private graphics: Graphics | null = null;
     private waveLabel: Label | null = null;
     private tipLabel: Label | null = null;
@@ -91,6 +106,19 @@ export class WaveManager extends Component {
     }
 
     protected update(dt: number): void {
+        // 游戏结束（生命归零）：波次停摆，别再出兵 / 倒计时
+        const lives = LivesManager.shared;
+        if (lives && lives.isGameOver) {
+            this.setTipVisible(false);
+            return;
+        }
+
+        // 首页未点「无尽模式」前：波次停摆，等开局后再跑
+        if (!GameSession.isStarted) {
+            this.setTipVisible(false);
+            return;
+        }
+
         const spawner = this.spawner || this.resolveSpawner();
         if (!spawner) {
             this.tickBar(dt);
@@ -162,7 +190,7 @@ export class WaveManager extends Component {
     }
 
     /** 整局进度 0..1：已完成的波次 + 本轮击杀比例。 */
-    private targetProgress(spawner: EnemySpawner | null): number {
+    private targetProgress(spawner: RoundSpawner | null): number {
         const perWave = 1 / Math.max(1, this.maxWave);
         const done = this.wave - 1;
         let inside = 0;
@@ -242,14 +270,23 @@ export class WaveManager extends Component {
         }
     }
 
-    private resolveSpawner(): EnemySpawner | null {
-        const configured = this.spawnerNode as unknown as Node;
-        if (configured && configured.isValid) {
-            return configured.getComponent(EnemySpawner);
-        }
+    /**
+     * 拿到"出兵器"。优先用 Canvas/Enemies 上**还启用着**的 EnemySpawner；
+     * 它被停用（现在是 PathNetworkRunner 在出兵）时就用路径网络出兵器 ——
+     * 两者都提供 count / totalCount / aliveCount / deploy() 这一组接口。
+     */
+    private resolveSpawner(): RoundSpawner | null {
         const parent = this.node.parent;
-        const box = parent ? parent.getChildByName('Enemies') : null;
-        return box ? box.getComponent(EnemySpawner) : null;
+        const configured = this.spawnerNode as unknown as Node;
+        const box = configured && configured.isValid
+            ? configured
+            : (parent ? parent.getChildByName('Enemies') : null);
+        const legacy = box ? box.getComponent(EnemySpawner) : null;
+        if (legacy && legacy.enabled) {
+            return legacy;
+        }
+        const runner = parent ? parent.getComponent(PathNetworkRunner) : null;
+        return runner && runner.enabled ? runner : null;
     }
 
     private findNode(name: string): Node | null {

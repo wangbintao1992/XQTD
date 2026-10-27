@@ -14,6 +14,8 @@ import {
 } from 'cc';
 import { sampleSpline } from './PathSpline';
 import { QiManager } from './QiManager';
+import { TipToast } from './TipToast';
+import { TowerActionMenu } from './TowerActionMenu';
 
 const { ccclass, property } = _decorator;
 
@@ -39,29 +41,44 @@ export class TowerDragSource extends Component {
     @property({ tooltip: '放置后要挂上的攻击组件名（留空则不挂），例如 TowerChe' })
     public attackComponent = 'TowerChe';
 
-    @property({ type: SpriteFrame, tooltip: '攻击墨迹贴图（例如 che_attack）' })
+    @property({ type: SpriteFrame, tooltip: '光刃贴图（che_attack2 长条）' })
     public attackFrame: SpriteFrame | null = null;
 
-    @property({ tooltip: '攻击贴图在 resources 下的路径（未指定贴图时用）' })
-    public attackResourcePath = 'textures/che_attack/spriteFrame';
+    @property({ tooltip: '光刃贴图在 resources 下的路径（未指定贴图时用）' })
+    public attackResourcePath = 'textures/attack/che/che_attack2/spriteFrame';
+
+    @property({ type: SpriteFrame, tooltip: '抬手聚墨贴图（che_attack1 墨团）' })
+    public attackWindupFrame: SpriteFrame | null = null;
+
+    @property({ tooltip: '抬手聚墨贴图在 resources 下的路径' })
+    public attackWindupResourcePath = 'textures/attack/che/che_attack1/spriteFrame';
+
+    @property({ tooltip: '抬手聚墨的尺寸（设计单位）' })
+    public attackWindupSize = 150;
 
     @property({ tooltip: '开火间隔（秒）' })
     public attackInterval = 1.2;
 
-    @property({ tooltip: '每发命中的伤害' })
+    @property({ tooltip: '每道光刃命中的伤害' })
     public attackDamage = 1;
 
-    @property({ tooltip: '墨迹最大飞行距离' })
+    @property({ tooltip: '光刃最大飞行距离' })
     public attackRange = 460;
 
-    @property({ tooltip: '墨迹飞行速度（设计单位/秒）' })
-    public attackProjectileSpeed = 900;
+    @property({ tooltip: '光刃飞行速度（设计单位/秒）' })
+    public attackProjectileSpeed = 420;
 
-    @property({ tooltip: '墨迹长度' })
-    public attackProjectileLength = 96;
+    @property({ tooltip: '光刃长度（设计单位）；粗细按贴图比例自动算' })
+    public attackProjectileLength = 260;
 
-    @property({ tooltip: '墨迹粗细' })
-    public attackProjectileWidth = 28;
+    @property({ tooltip: '抬手聚墨的前摇时长（秒）' })
+    public attackWindupTime = 0.1;
+
+    @property({ tooltip: '正片叠底（墨色叠加变浓）' })
+    public attackMultiplyBlend = true;
+
+    @property({ tooltip: '命中时的受击暂停时长（秒）' })
+    public attackHitPauseTime = 0.12;
 
     @property({ tooltip: '命中判定半径' })
     public attackHitRadius = 34;
@@ -72,10 +89,10 @@ export class TowerDragSource extends Component {
     @property({ type: Node, tooltip: '路径节点（放置时避开它）；留空则找同级名为 Path 的节点' })
     public pathNode: Node | null = null;
 
-    @property({ tooltip: '塔的显示大小（设计单位）' })
     @property({ tooltip: '放一个的棋气开销' })
     public cost = 50;
 
+    @property({ tooltip: '塔的显示大小（设计单位）' })
     public towerSize = 62;
 
     @property({ tooltip: '拖动时幽灵棋子的透明度（0~255）' })
@@ -183,6 +200,26 @@ export class TowerDragSource extends Component {
         return near;
     }
 
+    /**
+     * 放不下去时，给玩家一句能看懂的原因（用于统一 tip）。
+     * 按"最该先知道的原因"排：棋气 → 出界 → 压路径。
+     */
+    private describeDropFailure(pos: Vec3): string {
+        const qi = QiManager.shared;
+        const cost = Math.max(0, Math.floor(this.cost));
+        if (qi && !qi.canAfford(cost)) {
+            return `棋气不足，需要 ${cost}`;
+        }
+        const snapped = this.snap(pos);
+        if (!this.isInsideArea(snapped)) {
+            return '只能放在棋盘内';
+        }
+        if (this.isTooCloseToPath(snapped)) {
+            return '不能压在路径上';
+        }
+        return '这里放不下，换个位置';
+    }
+
     private onTouchStart(event: EventTouch): void {
         this.destroyGhost();
         this.lastLocal = null;
@@ -232,19 +269,23 @@ export class TowerDragSource extends Component {
 
         const target = this.resolveDropPosition(local);
         if (!target) {
-            console.log(`[TowerDragSource] ${reason} ${local.x.toFixed(0)},${local.y.toFixed(0)} -> 太远，不放置`);
+            const tip = this.describeDropFailure(local);
+            console.log(`[TowerDragSource] ${reason} ${local.x.toFixed(0)},${local.y.toFixed(0)} -> ${tip}`);
+            TipToast.show(tip);
             return;
         }
 
         const parent = this.resolveDropParent();
         if (!parent) {
             console.log('[TowerDragSource] 放置失败：找不到放置父节点');
+            TipToast.show('放置失败，请稍后再试');
             return;
         }
         const qi = QiManager.shared;
         const cost = Math.max(0, Math.floor(this.cost));
         if (qi && !qi.canAfford(cost)) {
             console.log(`[TowerDragSource] 棋气不足（需要 ${cost}，现有 ${qi.value}），放不下`);
+            TipToast.show(`棋气不足，需要 ${cost}`);
             return;
         }
 
@@ -401,6 +442,10 @@ export class TowerDragSource extends Component {
         node.layer = parent.layer;
         parent.addChild(node);
 
+        // 记下这个棋子花掉的棋气：以后「卖出」按它返还（见 TowerActionMenu）。
+        // 幽灵节点（Ghost）也会被记上，但它随即销毁，无副作用。
+        (node as any).towerCost = Math.max(0, Math.floor(this.cost));
+
         const transform = node.addComponent(UITransform);
         transform.setAnchorPoint(0.5, 0.5);
         transform.setContentSize(this.towerSize, this.towerSize);
@@ -435,14 +480,19 @@ export class TowerDragSource extends Component {
             if (!dst) {
                 return;
             }
-            dst.projectileFrame = this.attackFrame;
-            dst.projectileResourcePath = this.attackResourcePath;
+            dst.bladeFrame = this.attackFrame;
+            dst.bladeResourcePath = this.attackResourcePath;
+            dst.windupFrame = this.attackWindupFrame;
+            dst.windupResourcePath = this.attackWindupResourcePath;
+            dst.windupSize = this.attackWindupSize;
             dst.fireInterval = this.attackInterval;
             dst.damage = this.attackDamage;
             dst.attackRange = this.attackRange;
             dst.projectileSpeed = this.attackProjectileSpeed;
             dst.projectileLength = this.attackProjectileLength;
-            dst.projectileWidth = this.attackProjectileWidth;
+            dst.multiplyBlend = this.attackMultiplyBlend;
+            dst.windupTime = this.attackWindupTime;
+            dst.hitPauseTime = this.attackHitPauseTime;
             dst.hitRadius = this.attackHitRadius;
             dst.autoFire = true;             // 落地后才开火
             dst.debugLog = false;
@@ -455,20 +505,77 @@ export class TowerDragSource extends Component {
         }
     }
 
-    /** 点一下已放置的棋子 → 弹出 detail 介绍卡。 */
+    /** 点一下已放置的棋子 → 在它左右弹出「详情 / 卖出」选项。 */
     private attachDetailTap(node: Node): void {
         node.off(Node.EventType.TOUCH_END, this.onTowerTapped, this);
         node.on(Node.EventType.TOUCH_END, this.onTowerTapped, this);
     }
 
-    private onTowerTapped(): void {
-        const scene = this.node.scene;
-        const canvas = scene ? scene.getChildByName('Canvas') : null;
-        const popup = canvas ? canvas.getChildByName('TowerDetail') : null;
-        const comp: any = popup ? popup.getComponent('TowerDetailPopup') : null;
-        if (comp && typeof comp.show === 'function') {
-            comp.show();
+    /**
+     * 棋子被点：交给 TowerActionMenu 在棋子左右弹选项。
+     * 被点的棋子从事件的 currentTarget 拿（回调绑在棋子节点上）。
+     */
+    private onTowerTapped(event: EventTouch): void {
+        const tower = (event && (event as any).currentTarget) as unknown as Node;
+        if (!tower || !tower.isValid) {
+            return;
         }
+        const menu = this.resolveActionMenu();
+        if (menu) {
+            menu.showFor(tower);
+            return;
+        }
+        // 兜底：拿不到菜单组件时，退回"直接弹详情"（同样是保持显示）
+        const popup = this.resolveDetailPopup();
+        if (popup && typeof popup.show === 'function') {
+            popup.show(0);
+        }
+    }
+
+    /** 找 Canvas 上挂着的 TowerActionMenu；没有就现场挂一个。 */
+    private resolveActionMenu(): any {
+        const canvas = this.resolveCanvas();
+        if (!canvas) {
+            return null;
+        }
+        let comp: any = canvas.getComponent(TowerActionMenu);
+        if (!comp) {
+            for (const child of canvas.children) {
+                const found = child.getComponent(TowerActionMenu);
+                if (found) {
+                    comp = found;
+                    break;
+                }
+            }
+        }
+        if (!comp) {
+            try {
+                comp = canvas.addComponent(TowerActionMenu);
+            } catch (e) {
+                console.warn('[TowerDragSource] 挂 TowerActionMenu 失败', e);
+                comp = null;
+            }
+        }
+        return comp && typeof comp.showFor === 'function' ? comp : null;
+    }
+
+    private resolveDetailPopup(): any {
+        const canvas = this.resolveCanvas();
+        const popup = canvas ? canvas.getChildByName('TowerDetail') : null;
+        return popup ? popup.getComponent('TowerDetailPopup') : null;
+    }
+
+    /** 往上找名为 Canvas 的节点（塔可能在 Canvas/Towers 下，也可能在别处）。 */
+    private resolveCanvas(): Node | null {
+        let node: Node | null = this.node;
+        while (node) {
+            if (node.name === 'Canvas') {
+                return node;
+            }
+            node = node.parent;
+        }
+        const scene = this.node.scene;
+        return scene ? scene.getChildByName('Canvas') : null;
     }
 
     private destroyGhost(): void {

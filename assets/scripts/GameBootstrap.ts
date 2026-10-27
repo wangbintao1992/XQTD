@@ -11,6 +11,8 @@ import {
     sys,
     view,
 } from 'cc';
+import { LivesManager } from './LivesManager';
+import { HomeMenu } from './HomeMenu';
 
 const { ccclass, property } = _decorator;
 
@@ -52,7 +54,29 @@ export class GameBootstrap extends Component {
             this.enforceLandscapeDesign();
             void this.lockLandscape();
         }
+        this.ensureLives();
+        this.ensureHomeMenu();
         this.setupBackground();
+    }
+
+    /**
+     * 保证 Canvas 上有生命值管理器（`LivesManager`）。
+     * 没在编辑器里手动摆也能跑；手动摆过就沿用摆好的那个，不重复加。
+     */
+    private ensureLives(): void {
+        if (!this.node.getComponent(LivesManager)) {
+            this.node.addComponent(LivesManager);
+        }
+    }
+
+    /**
+     * 保证 Canvas 上有首页（`HomeMenu`）：进游戏先显示首页，
+     * 点「无尽模式」后才 `GameSession.start()` 让游戏自动开始。
+     */
+    private ensureHomeMenu(): void {
+        if (!this.node.getComponent(HomeMenu)) {
+            this.node.addComponent(HomeMenu);
+        }
     }
 
     protected start(): void {

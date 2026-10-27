@@ -13,9 +13,14 @@ import {
 const { ccclass, property } = _decorator;
 
 /**
- * 棋子详情弹窗：点击已放置的棋子，弹出 `detail` 那张棋子介绍卡。
- * 按用户要求：内容**固定**（素材本身已经排好版），
- * 显示 `showTime` 秒后自动消失，或者点其他地方（遮罩）立刻消失。
+ * 棋子详情弹窗：点已放置的棋子 → 选「详情」，弹出 `detail` 那张棋子介绍卡。
+ * 按用户要求：内容**固定**（素材本身已经排好版）。
+ *
+ * 两种显示方式：
+ *  - `show()`      —— 用面板上的 `showTime`，若干秒后自动收起（旧的默认行为）；
+ *  - `show(0)`     —— **保持显示**，不自动收起，点空白处（遮罩）才关。
+ *                    棋子选项菜单（TowerActionMenu）点「详情」时走这条。
+ * 两者都可以点其他地方（遮罩）立刻消失。
  */
 @ccclass('TowerDetailPopup')
 export class TowerDetailPopup extends Component {
@@ -40,6 +45,7 @@ export class TowerDetailPopup extends Component {
 
     private timer = 0;
     private showing = false;
+    private persistent = false;
     private mask: Node | null = null;
     private card: Node | null = null;
 
@@ -53,7 +59,7 @@ export class TowerDetailPopup extends Component {
     }
 
     protected update(dt: number): void {
-        if (!this.showing) {
+        if (!this.showing || this.persistent) {
             return;
         }
         this.timer -= dt;
@@ -62,17 +68,24 @@ export class TowerDetailPopup extends Component {
         }
     }
 
-    /** 显示详情卡。 */
-    public show(): void {
+    /**
+     * 显示详情卡。
+     * `holdSeconds` 省略 = 用面板上的 `showTime`；传 0（或负数）= **保持显示**，
+     * 不自动收起，只能点空白处（遮罩）关掉。
+     */
+    public show(holdSeconds?: number): void {
         this.ensureFrame();
         if (!this.detailFrame) {
             return;
         }
         this.build();
         this.showing = true;
-        this.timer = Math.max(0.1, this.showTime);
+        const hold = holdSeconds === undefined ? this.showTime : holdSeconds;
+        this.persistent = hold <= 0;
+        this.timer = this.persistent ? 0 : Math.max(0.1, hold);
         if (this.debugLog) {
-            console.log('[TowerDetailPopup] 弹出棋子详情，' + this.showTime + ' 秒后自动收起');
+            console.log('[TowerDetailPopup] 弹出棋子详情，'
+                + (this.persistent ? '保持显示（点空白处收起）' : this.showTime + ' 秒后自动收起'));
         }
     }
 
@@ -80,6 +93,7 @@ export class TowerDetailPopup extends Component {
     public hide(): void {
         this.showing = false;
         this.timer = 0;
+        this.persistent = false;
         if (this.card && this.card.isValid) {
             this.card.removeFromParent();
             this.card.destroy();
