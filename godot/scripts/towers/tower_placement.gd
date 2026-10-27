@@ -1,6 +1,8 @@
 class_name TowerPlacement
 extends Node
 
+signal tower_placed(tower: Node)
+
 ## 拖拽放塔：区域 / 20x20 吸附 / 避开路径 / 扣棋气。
 
 const AREA_MIN := Vector2(-412.5, -120.0)
@@ -194,11 +196,12 @@ func place(scene: PackedScene, pos: Vector2, cost: int = COST):
 	var tower = scene.instantiate()
 	tower.tower_cost = cost
 	if tower.has_method("setup"):
-		tower.setup(enemies_root)
+		tower.setup(enemies_root, towers_root)
 	tower.position = Coords.to_screen(pos)
 	towers_root.add_child(tower)
 	if qi:
 		qi.spend(cost)
+	tower_placed.emit(tower)
 	return tower
 
 
