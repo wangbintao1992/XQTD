@@ -1,0 +1,166 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/sidebar.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/tower_card.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/towers/tower_che.tscn" id="3"]
+[ext_resource type="Texture2D" path="res://art/qz/b_che.png" id="4"]
+[ext_resource type="Texture2D" path="res://art/qz/b_pao.png" id="5"]
+[ext_resource type="Texture2D" path="res://art/qz/b_ma.png" id="6"]
+
+[node name="Sidebar" type="CanvasLayer"]
+script = ExtResource("1")
+
+[node name="Panel" type="Control" parent="."]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 50.0
+offset_right = 210.0
+offset_bottom = 670.0
+
+[node name="Bg" type="ColorRect" parent="Panel"]
+layout_mode = 0
+offset_right = 210.0
+offset_bottom = 620.0
+color = Color(0.08, 0.08, 0.1, 0.62)
+mouse_filter = 2
+
+[node name="CardChe" type="Control" parent="Panel"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 25.0
+offset_right = 190.0
+offset_bottom = 215.0
+script = ExtResource("2")
+tower_scene = ExtResource("3")
+tower_texture = ExtResource("4")
+cost = 50
+display_name = "车"
+available = true
+
+[node name="Bg" type="ColorRect" parent="Panel/CardChe"]
+layout_mode = 0
+offset_right = 170.0
+offset_bottom = 190.0
+color = Color(0.12, 0.12, 0.15, 0.55)
+mouse_filter = 2
+
+[node name="Icon" type="TextureRect" parent="Panel/CardChe"]
+layout_mode = 0
+offset_left = 29.0
+offset_top = 21.0
+offset_right = 141.0
+offset_bottom = 133.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+texture = ExtResource("4")
+
+[node name="Count" type="Label" parent="Panel/CardChe"]
+layout_mode = 0
+offset_left = 42.0
+offset_top = 150.0
+offset_right = 128.0
+offset_bottom = 190.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 30
+text = "20/20"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CardPao" type="Control" parent="Panel"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 215.0
+offset_right = 190.0
+offset_bottom = 405.0
+script = ExtResource("2")
+tower_scene = ExtResource("3")
+tower_texture = ExtResource("5")
+cost = 50
+display_name = "炮"
+available = false
+
+[node name="Bg" type="ColorRect" parent="Panel/CardPao"]
+layout_mode = 0
+offset_right = 170.0
+offset_bottom = 190.0
+color = Color(0.12, 0.12, 0.15, 0.55)
+mouse_filter = 2
+
+[node name="Icon" type="TextureRect" parent="Panel/CardPao"]
+layout_mode = 0
+offset_left = 29.0
+offset_top = 21.0
+offset_right = 141.0
+offset_bottom = 133.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+texture = ExtResource("5")
+
+[node name="Count" type="Label" parent="Panel/CardPao"]
+layout_mode = 0
+offset_left = 42.0
+offset_top = 150.0
+offset_right = 128.0
+offset_bottom = 190.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 30
+text = "20/20"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CardMa" type="Control" parent="Panel"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 405.0
+offset_right = 190.0
+offset_bottom = 595.0
+script = ExtResource("2")
+tower_scene = ExtResource("3")
+tower_texture = ExtResource("6")
+cost = 50
+display_name = "马"
+available = false
+
+[node name="Bg" type="ColorRect" parent="Panel/CardMa"]
+layout_mode = 0
+offset_right = 170.0
+offset_bottom = 190.0
+color = Color(0.12, 0.12, 0.15, 0.55)
+mouse_filter = 2
+
+[node name="Icon" type="TextureRect" parent="Panel/CardMa"]
+layout_mode = 0
+offset_left = 29.0
+offset_top = 21.0
+offset_right = 141.0
+offset_bottom = 133.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+texture = ExtResource("6")
+
+[node name="Count" type="Label" parent="Panel/CardMa"]
+layout_mode = 0
+offset_left = 42.0
+offset_top = 150.0
+offset_right = 128.0
+offset_bottom = 190.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 30
+text = "20/20"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Toggle" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 207.0
+offset_top = 280.0
+offset_right = 247.0
+offset_bottom = 340.0
+theme_override_font_sizes/font_size = 40
+text = "◀"
