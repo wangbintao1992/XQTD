@@ -1,6 +1,6 @@
 extends Node
 
-## 集成冒烟：加载主场景 → 开局 → 出兵 → 放塔 → 生命归零 → 重开。
+## 集成冒烟：加载主场景 → 开局 → 出兵 → 放三种塔 → 点塔菜单/卖出 → 天气 → 选卡 → 结束 → 重开。
 ## 运行：godot --headless --path godot --fixed-fps 60 res://tests/integration.tscn
 
 func _ready() -> void:
@@ -23,16 +23,40 @@ func _ready() -> void:
 	print("INTEGRATION enemies=", count)
 
 	var placement = main.get_node_or_null("TowerPlacement")
+	Qi.earn(300)
+	var spot = placement.resolve_drop(Vector2(-200, 100)) if placement else null
+	var che = placement.place(load("res://scenes/towers/tower_che.tscn"), spot) if spot != null else null
+	var pao = placement.place(load("res://scenes/towers/tower_pao.tscn"), spot) if spot != null else null
+	var ma = placement.place(load("res://scenes/towers/tower_ma.tscn"), spot) if spot != null else null
+	var placed_ok: bool = che != null and pao != null and ma != null \
+		and main.get_node("Towers").get_child_count() >= 3
+	print("INTEGRATION towers=", placed_ok)
+
+	var menu = main.get_node_or_null("TowerActionMenu")
+	if pao:
+		pao.clicked.emit(pao)
+	var menu_ok: bool = menu != null and menu.is_open
+	print("INTEGRATION menu=", menu_ok)
+
 	var before_qi: int = Qi.value
-	var tower = null
-	if placement:
-		var p = placement.resolve_drop(Vector2(-200, 100))
-		if p != null:
-			tower = placement.place(load("res://scenes/towers/tower_che.tscn"), p)
-	var placed_ok: bool = tower != null \
-		and Qi.value == before_qi - 50 \
-		and main.get_node("Towers").get_child_count() == 1
-	print("INTEGRATION tower=", placed_ok)
+	if menu and pao:
+		menu.sell(pao)
+	var sell_ok: bool = pao != null and pao.get_parent() == null and Qi.value == before_qi + 40
+	print("INTEGRATION sell=", sell_ok)
+
+	var weather = main.get_node_or_null("Weather")
+	if weather:
+		weather.set_weather("rain")
+	var weather_ok: bool = weather != null and weather.layers["rain"][0].visible
+	print("INTEGRATION weather=", weather_ok)
+
+	var picker = main.get_node_or_null("CardPicker")
+	var picked := [0]
+	if picker:
+		picker.open_with_timeout(0.05, func(): picked[0] += 1)
+		picker._process(0.1)
+		picker._process(0.5)
+	print("INTEGRATION picker=", picked[0] == 1)
 
 	Lives.lose(100)
 	await get_tree().process_frame
@@ -48,4 +72,6 @@ func _ready() -> void:
 		and main.get_node("Towers").get_child_count() == 0
 	print("INTEGRATION reset=", reset_ok)
 
-	get_tree().quit(0 if count > 0 and placed_ok and over_ok and reset_ok else 1)
+	var ok: bool = count > 0 and placed_ok and menu_ok and sell_ok \
+		and weather_ok and picked[0] == 1 and over_ok and reset_ok
+	get_tree().quit(0 if ok else 1)
