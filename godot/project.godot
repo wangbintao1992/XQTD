@@ -19,6 +19,7 @@ Log="*res://scripts/autoload/log.gd"
 Toast="*res://scripts/autoload/toast.gd"
 RunState="*res://scripts/autoload/run_state.gd"
 Leaderboard="*res://scripts/autoload/leaderboard.gd"
+Equipment="*res://scripts/autoload/equipment_manager.gd"
 
 [display]
 
