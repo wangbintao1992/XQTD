@@ -3,13 +3,14 @@ extends Control
 
 ## 侧栏里的一张塔卡：可拖拽的发出 drag_requested；未开放的只提示。
 
-signal drag_requested(scene: PackedScene, cost: int, texture: Texture2D)
+signal drag_requested(scene: PackedScene, cost: int, texture: Texture2D, kind: String)
 signal unavailable(message: String)
 
 @export var tower_scene: PackedScene
 @export var tower_texture: Texture2D
 @export var cost := 50
 @export var display_name := "车"
+@export var tower_kind := "che"
 @export var available := true
 
 
@@ -35,5 +36,5 @@ func _gui_input(event: InputEvent) -> void:
 		accept_event()
 		return
 
-	drag_requested.emit(tower_scene, cost, tower_texture)
+	drag_requested.emit(tower_scene, cost, tower_texture, tower_kind)
 	accept_event()

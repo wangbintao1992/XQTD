@@ -38,6 +38,7 @@ tower_scene = ExtResource("3")
 tower_texture = ExtResource("4")
 cost = 50
 display_name = "车"
+tower_kind = "che"
 available = true
 
 [node name="Bg" type="ColorRect" parent="Panel/CardChe"]
@@ -82,6 +83,7 @@ tower_scene = ExtResource("7")
 tower_texture = ExtResource("5")
 cost = 50
 display_name = "炮"
+tower_kind = "pao"
 available = true
 
 [node name="Bg" type="ColorRect" parent="Panel/CardPao"]
@@ -126,6 +128,7 @@ tower_scene = ExtResource("8")
 tower_texture = ExtResource("6")
 cost = 50
 display_name = "马"
+tower_kind = "ma"
 available = true
 
 [node name="Bg" type="ColorRect" parent="Panel/CardMa"]

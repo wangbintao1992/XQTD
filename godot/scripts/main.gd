@@ -39,8 +39,8 @@ func _ready() -> void:
 
 	for card in sidebar.get_cards():
 		card.drag_requested.connect(
-			func(scene: PackedScene, cost: int, tex: Texture2D):
-				placement.begin_drag(scene, cost, tex)
+			func(scene: PackedScene, cost: int, tex: Texture2D, kind: String):
+				placement.begin_drag(scene, cost, tex, Vector2.INF, kind)
 		)
 		card.unavailable.connect(func(msg: String): Toast.show(msg))
 

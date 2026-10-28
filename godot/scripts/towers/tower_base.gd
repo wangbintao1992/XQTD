@@ -4,11 +4,13 @@ extends Node2D
 ## 所有塔的基类：尺寸、花费、敌人容器、开火接口。
 
 const TOWER_SIZE := 62.0
+const MAX_LEVEL := 3
 
 signal clicked(tower: Node)
 
 var tower_cost := 50
 var tower_kind := ""
+var level := 1
 var enemies_root: Node
 var towers_root: Node
 
@@ -47,6 +49,29 @@ func fire() -> int:
 
 func apply_traits() -> void:
 	pass
+
+
+func merge_one() -> bool:
+	if level >= MAX_LEVEL:
+		return false
+	level += 1
+	apply_traits()
+	var body := get_node_or_null("Body") as Sprite2D
+	if body:
+		body.scale *= Vector2(1.06, 1.06)
+	return true
+
+
+func level_damage_mult() -> float:
+	return 1.0 + 0.5 * float(level - 1)
+
+
+func level_range_mult() -> float:
+	return 1.0 + 0.10 * float(level - 1)
+
+
+func level_interval_mult() -> float:
+	return pow(0.9, level - 1)
 
 
 func trait_damage_mult() -> float:

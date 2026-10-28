@@ -29,6 +29,7 @@ const TEST_PATHS := [
 	"res://tests/test_r2_traits.gd",
 	"res://tests/test_combo.gd",
 	"res://tests/test_leaderboard.gd",
+	"res://tests/test_merge.gd",
 ]
 
 

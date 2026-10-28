@@ -24,6 +24,7 @@ var toast: Object
 var _ghost: Sprite2D
 var _drag_scene: PackedScene
 var _drag_cost := COST
+var _drag_kind := ""
 var _dragging := false
 
 
@@ -51,11 +52,13 @@ func begin_drag(
 	scene: PackedScene,
 	cost: int,
 	texture: Texture2D,
-	screen_pos: Vector2 = Vector2.INF
+	screen_pos: Vector2 = Vector2.INF,
+	kind: String = ""
 ) -> void:
 	cancel_drag()
 	_drag_scene = scene
 	_drag_cost = cost
+	_drag_kind = kind
 	_dragging = true
 
 	_ghost = Sprite2D.new()
@@ -93,7 +96,19 @@ func _input(event: InputEvent) -> void:
 		if target == null:
 			_show_toast(describe_failure(design))
 		else:
-			place(_drag_scene, target, _drag_cost)
+			var merge_target = find_merge_target(target, _drag_kind)
+			if merge_target:
+				var cost := effective_cost()
+				if qi and not qi.can_afford(cost):
+					_show_toast("棋气不足，需要 %d" % cost)
+				elif merge_target.merge_one():
+					if qi:
+						qi.spend(cost)
+					_show_toast("合成：Lv%d" % merge_target.level)
+				else:
+					_show_toast("已满级")
+			else:
+				place(_drag_scene, target, _drag_cost)
 		cancel_drag()
 		if is_inside_tree():
 			get_viewport().set_input_as_handled()
@@ -189,6 +204,20 @@ func is_too_close_to_path(pos: Vector2) -> bool:
 			if _dist_to_segment(pos, a, b) < MIN_PATH_DIST:
 				return true
 	return false
+
+
+func find_merge_target(pos: Vector2, kind: String):
+	if kind == "" or towers_root == null:
+		return null
+	var screen := Coords.to_screen(pos)
+	for t in towers_root.get_children():
+		if not is_instance_valid(t) or not t.has_method("merge_one"):
+			continue
+		if t.tower_kind != kind:
+			continue
+		if t.global_position.distance_to(screen) <= 36.0:
+			return t
+	return null
 
 
 func place(scene: PackedScene, pos: Vector2, cost: int = COST):
