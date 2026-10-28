@@ -138,5 +138,7 @@ func _on_game_over() -> void:
 		wave.set_process(false)
 	if weather:
 		weather.set_weather("")
+	if combo:
+		combo.enabled = false
 	if enemies:
 		enemies.process_mode = Node.PROCESS_MODE_DISABLED

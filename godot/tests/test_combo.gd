@@ -8,6 +8,10 @@ class FakeEnemy extends Node2D:
 		hp = maxi(0, hp - n)
 
 
+class FakeSession:
+	var started := true
+
+
 func run(t) -> void:
 	var enemies := Node2D.new()
 	var towers := Node2D.new()
@@ -77,6 +81,73 @@ func run(t) -> void:
 	t.eq(on3.hp, 0, "double_pao clears line")
 	t.eq(off3.hp, 100, "double_pao spares off-line")
 
+	# 吸附格上的斜放不能误判成同行
+	var tp = preload("res://scripts/towers/tower_placement.gd").new()
+	var s1: Vector2 = tp.snap(Vector2(-200, 0))
+	var s2: Vector2 = tp.snap(Vector2(-165, 20))
+	var s3: Vector2 = tp.snap(Vector2(-165, 0))
+	t.check(absf(s1.y - s2.y) > 9.0, "diagonal snap differs by a row")
+
+	var e4 := Node2D.new()
+	var tw4 := Node2D.new()
+	t.root.add_child(e4)
+	t.root.add_child(tw4)
+	var c4 = preload("res://scripts/core/combo_system.gd").new()
+	t.root.add_child(c4)
+	c4.setup(tw4, e4)
+	var d1 = preload("res://scenes/towers/tower_che.tscn").instantiate()
+	d1.auto_fire = false
+	d1.position = s1
+	tw4.add_child(d1)
+	var d2 = preload("res://scenes/towers/tower_che.tscn").instantiate()
+	d2.auto_fire = false
+	d2.position = s2
+	tw4.add_child(d2)
+	t.check(not c4.check_combos().has("double_che"), "diagonal does not trigger")
+	d2.position = s3
+	t.check(c4.check_combos().has("double_che"), "same snapped row triggers")
+
+	# 无目标不触发 / 高血量也能清 / 未开局不消耗 / reset
+	var e5 := Node2D.new()
+	var tw5 := Node2D.new()
+	t.root.add_child(e5)
+	t.root.add_child(tw5)
+	var c5 = preload("res://scripts/core/combo_system.gd").new()
+	t.root.add_child(c5)
+	c5.setup(tw5, e5)
+	var ma2 = preload("res://scenes/towers/tower_ma.tscn").instantiate()
+	ma2.auto_fire = false
+	ma2.position = Vector2(0, 0)
+	tw5.add_child(ma2)
+	var pao2 = preload("res://scenes/towers/tower_pao.tscn").instantiate()
+	pao2.auto_fire = false
+	pao2.position = Vector2(0, 100)
+	tw5.add_child(pao2)
+	t.eq(c5.try_trigger(), "", "no targets = no trigger")
+
+	var high := _dummy(e5, Vector2(0, 200))
+	high.hp = 50000
+	t.eq(c5.try_trigger(), "ma_pao", "high hp still triggers")
+	t.eq(high.hp, 0, "high hp cleared")
+
+	var fs := FakeSession.new()
+	fs.started = false
+	c5.setup(tw5, e5, fs, null)
+	c5._timer = 6.0
+	c5._process(0.1)
+	t.check(c5._timer >= 6.0, "not started does not consume cooldown")
+
+	fs.started = true
+	var e6 := _dummy(e5, Vector2(0, 200))
+	c5._timer = 6.0
+	c5._process(0.1)
+	t.eq(c5._timer, 0.0, "cooldown consumed on hit")
+	t.eq(e6.hp, 0, "process clears line")
+	c5._timer = 5.0
+	c5.reset()
+	t.eq(c5._timer, 0.0, "reset timer")
+
+	tp.free()
 	combo.free()
 	towers.free()
 	enemies.free()
@@ -86,6 +157,12 @@ func run(t) -> void:
 	c3.free()
 	tw3.free()
 	e3.free()
+	c4.free()
+	tw4.free()
+	e4.free()
+	c5.free()
+	tw5.free()
+	e5.free()
 
 
 func _dummy(parent: Node, pos: Vector2) -> FakeEnemy:

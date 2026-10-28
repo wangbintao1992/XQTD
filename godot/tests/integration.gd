@@ -74,9 +74,15 @@ func _ready() -> void:
 	print("INTEGRATION all_towers=", che != null and pao != null and ma != null)
 
 	var combo = main.get_node_or_null("ComboSystem")
-	var combo_ok: bool = combo != null \
-		and combo.check_combos().has("ma_pao") \
-		and combo.try_trigger() == "ma_pao"
+	var combo_ok := false
+	if combo and combo.check_combos().has("ma_pao"):
+		var g = preload("res://scripts/core/path_graph.gd").new()
+		var dummy = preload("res://scenes/enemy.tscn").instantiate()
+		dummy.setup(EnemyKinds.KINDS[0], g, 0, 1, 0.0)
+		enemies.add_child(dummy)
+		dummy.position = Vector2(ma.position.x, ma.position.y + 200)
+		dummy.walker.set_process(false)
+		combo_ok = combo.try_trigger() == "ma_pao"
 	print("INTEGRATION combo=", combo_ok)
 
 	var menu = main.get_node_or_null("TowerActionMenu")
@@ -104,6 +110,7 @@ func _ready() -> void:
 		card_picker._process(0.5)
 	print("INTEGRATION picker=", picked[0] == 1)
 
+	var final_wave: int = RunStateData.instance.wave
 	Lives.lose(100)
 	await get_tree().process_frame
 	var game_over = main.get_node_or_null("GameOver")
@@ -112,8 +119,8 @@ func _ready() -> void:
 	print("INTEGRATION gameover=", over_ok)
 
 	var best_ok: bool = LeaderboardData.instance != null \
-		and LeaderboardData.instance.best_wave >= 10 \
-		and hud != null and hud.best_label.text.find("10") >= 0
+		and LeaderboardData.instance.best_wave == final_wave \
+		and hud != null and hud.best_label.text == "最高波数 %d" % final_wave
 	print("INTEGRATION best=", best_ok)
 
 	rc.start_new_run()
@@ -124,9 +131,12 @@ func _ready() -> void:
 		and RunStateData.instance != null and RunStateData.instance.traits.size() == 0 \
 		and RunStateData.instance.mutation == "" \
 		and hud != null and hud.mutation_label.text == "异变：—"
-	print("INTEGRATION reset=", reset_ok)
+	var best_kept: bool = LeaderboardData.instance != null \
+		and LeaderboardData.instance.best_wave == final_wave \
+		and hud != null and hud.best_label.text == "最高波数 %d" % final_wave
+	print("INTEGRATION reset=", reset_ok, " best_kept=", best_kept)
 
 	var ok: bool = count > 0 and pipeline_ok and endless_ok and elite_ok and mutation_ok \
 		and rs_ok and hud_ok and menu_ok and sell_ok and weather_ok \
-		and picked[0] == 1 and over_ok and best_ok and reset_ok
+		and picked[0] == 1 and over_ok and best_ok and reset_ok and best_kept
 	get_tree().quit(0 if ok else 1)
