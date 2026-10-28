@@ -18,6 +18,7 @@ var action_menu: TowerActionMenu
 var tower_detail: TowerDetail
 var weather: WeatherSystem
 var combo: ComboSystem
+var leaderboard: Object
 
 
 func _ready() -> void:
@@ -41,6 +42,7 @@ func _ready() -> void:
 		tower_detail = main.get_node_or_null("TowerDetail") as TowerDetail
 		weather = main.get_node_or_null("Weather") as WeatherSystem
 		combo = main.get_node_or_null("ComboSystem") as ComboSystem
+	leaderboard = get_node_or_null("/root/Leaderboard")
 
 	if home:
 		home.endless_pressed.connect(start_new_run)
@@ -126,6 +128,8 @@ func go_home() -> void:
 
 
 func _on_game_over() -> void:
+	if leaderboard and RunStateData.instance:
+		leaderboard.submit(RunStateData.instance.wave)
 	if game_over:
 		game_over.show_popup()
 	if spawner:

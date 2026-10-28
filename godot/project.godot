@@ -18,6 +18,7 @@ Lives="*res://scripts/autoload/lives.gd"
 Log="*res://scripts/autoload/log.gd"
 Toast="*res://scripts/autoload/toast.gd"
 RunState="*res://scripts/autoload/run_state.gd"
+Leaderboard="*res://scripts/autoload/leaderboard.gd"
 
 [display]
 

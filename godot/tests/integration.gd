@@ -105,6 +105,11 @@ func _ready() -> void:
 		and main.get_node("Enemies").process_mode == Node.PROCESS_MODE_DISABLED
 	print("INTEGRATION gameover=", over_ok)
 
+	var best_ok: bool = LeaderboardData.instance != null \
+		and LeaderboardData.instance.best_wave >= 10 \
+		and hud != null and hud.best_label.text.find("10") >= 0
+	print("INTEGRATION best=", best_ok)
+
 	rc.start_new_run()
 	await get_tree().process_frame
 	var reset_ok: bool = game_over != null and not game_over.visible \
@@ -117,5 +122,5 @@ func _ready() -> void:
 
 	var ok: bool = count > 0 and pipeline_ok and endless_ok and elite_ok and mutation_ok \
 		and rs_ok and hud_ok and menu_ok and sell_ok and weather_ok \
-		and picked[0] == 1 and over_ok and reset_ok
+		and picked[0] == 1 and over_ok and best_ok and reset_ok
 	get_tree().quit(0 if ok else 1)
