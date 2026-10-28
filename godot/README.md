@@ -20,6 +20,10 @@ godot --headless --path godot --script res://tests/run_tests.gd
 
 # 集成冒烟：开局 → 出兵 → 放塔 → 生命归零 → 重开
 godot --headless --path godot --fixed-fps 60 res://tests/integration.tscn
+
+# 真实后端联调（先起 server）
+XQTD_LEADERBOARD_URL=http://127.0.0.1:8080 \
+  godot --headless --path godot res://tests/leaderboard_live.tscn
 ```
 
 ## M1 已实现
@@ -54,13 +58,13 @@ godot --headless --path godot --fixed-fps 60 res://tests/integration.tscn
 - 每 10 波棋局异变：炮弱马强 / 车短怪快 / 逆风局；HUD 显示当前异变。
 - 每 5 波精英黑棋：黑马 / 黑车 / 黑炮，高血高奖励；击杀掉落随机词条。
 - 新词条：美人计（每 6s 停顿一个敌人）、绝杀减速（击杀后全体减速 2s）。
-- R3 已实现：马后炮 / 双车错 / 重炮、最高波数桩。
+- R3 已实现：马后炮 / 双车错 / 重炮、最高波数；真实后端见 R8。
 
 ## 肉鸽无尽 R3
 
 - 组合技：马后炮 / 双车错 / 重炮；阵型存在 + 6s 冷却触发，整线清屏 + 墨浪。
-- 最高波数：本地排行榜桩；结束局提交，HUD 右下显示；真实 Java 后端留后续。
-- R4 已实现：局内合成、天气 Buff。R5 已实现装备；R6 已实现地形；R7 已实现精英技能。后续：真实排行榜、M3 视觉。
+- 最高波数：本地立即生效，结束局自动上报；真实排行榜见 R8。
+- R4 已实现：局内合成、天气 Buff。R5 已实现装备；R6 已实现地形；R7 已实现精英技能；R8 已实现真实排行榜。
 
 ## 肉鸽无尽 R4
 
@@ -73,20 +77,30 @@ godot --headless --path godot --fixed-fps 60 res://tests/integration.tscn
 - 装备：3 槽（头盔 / 兵器 / 护甲）、5 品质（白绿蓝紫橙）、1-3 条随机词条（伤害 / 射程 / 攻速 / 棋气消耗）。
 - 精英掉落；穿新覆盖旧、不可脱下；属性跨局生效。
 - 按 E 打开装备面板；本地存档 `user://equipment.json`。
-- 待做：真实后端排行榜、M3 视觉。
+- 后续：M3 视觉。
 
 ## 肉鸽无尽 R6
 
 - 路径地形：河（敌速 ×0.8，过河后 ×1.15「过河卒」）、山（×0.7）、桥（×1.1）。
 - 地形以水墨圆区 + 标签叠在路径上，只影响敌人移动。
-- R7 已实现：精英特殊攻击。后续：真实后端排行榜、M3 水墨视觉/布局/性能。
+- R7 已实现：精英特殊攻击。R8 已实现真实排行榜。
 
 ## 肉鸽无尽 R7
 
 - 黑马：免疫受击暂停。
 - 黑车：每 5s 眩晕最近的塔 1.5s。
 - 黑炮：每 5s 眩晕最远的塔 1.0s。
-- 待做：真实 Java 后端排行榜、M3 水墨视觉 / 布局 / 性能。
+- R8 已实现：真实 Java 后端排行榜。后续：M3 水墨视觉 / 布局 / 性能。
+
+## 真实排行榜（R8）
+
+- 后端在 `server/`：Java 21 + Spring Boot + H2，默认 `http://127.0.0.1:8080`。
+- 启动时自动拉 Top；生命归零自动上报最终波数；本地最高立即生效，离线不阻塞。
+- 按 **L** 打开排行榜：Top 10、个人最高/排名、昵称修改、手动刷新。
+- 玩家身份存 `user://leaderboard_profile.json`（UUID + 昵称 + 最高波数），跨启动保留。
+- 服务地址：环境变量 `XQTD_LEADERBOARD_URL` > `project.godot` 的 `xqtd/leaderboard_url` > 默认地址。
+- 起后端：`cd server && ./mvnw spring-boot:run`；详见 `server/README.md`。
+- 已知限制：客户端上报波数，服务端未复算 BattleReport，存在伪造空间。
 
 ## 仍缺（M3）
 
@@ -107,11 +121,13 @@ godot/
 │   ├── core/       PathGraph / PathSpawner / WaveManager / RunController / WeatherSystem / ComboSystem / TerrainSystem
 │   ├── entities/   Enemy / PathWalker / HitPause
 │   ├── towers/     TowerBase / TowerChe / TowerPao / TowerMa / TowerPlacement
-│   ├── ui/         Hud / Sidebar / TowerCard / CardPicker / TowerActionMenu / TowerDetail / EquipmentPanel / HomeMenu / GameOver
+│   ├── ui/         Hud / Sidebar / TowerCard / CardPicker / TowerActionMenu / TowerDetail / EquipmentPanel / LeaderboardPanel / HomeMenu / GameOver
 │   ├── data/       path_graph_data.gd（生成物）/ enemy_kinds.gd / trait_pool.gd
 │   └── util/       Coords / UiFont
 ├── tests/          run_tests.gd + test_*.gd + integration.tscn
 └── tools/          convert_path_graph.py
+
+server/             Java 21 + Spring Boot 排行榜后端
 ```
 
 ## 注意

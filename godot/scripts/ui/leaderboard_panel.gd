@@ -30,6 +30,8 @@ func _input(event: InputEvent) -> void:
 		return
 	if event.keycode != KEY_L:
 		return
+	if _name_edit and _name_edit.has_focus():
+		return
 	var session = get_node_or_null("/root/GameSession")
 	if session and not session.started:
 		return

@@ -12,6 +12,10 @@ func _ready() -> void:
 		equip_mgr.persistence_enabled = false
 		equip_mgr.reset_for_test()
 
+	var leaderboard = LeaderboardData.instance
+	if leaderboard:
+		leaderboard.reset_for_test()
+
 	var rc = main.get_node_or_null("RunController")
 	if rc == null:
 		printerr("INTEGRATION: no RunController")
@@ -229,6 +233,22 @@ func _ready() -> void:
 		and hud != null and hud.best_label.text == "最高波数 %d" % final_wave
 	print("INTEGRATION best=", best_ok)
 
+	var leaderboard_panel = main.get_node_or_null("LeaderboardPanel")
+	var leaderboard_panel_ok := false
+	if leaderboard_panel and leaderboard:
+		leaderboard.top_entries = [
+			{"rank": 1, "playerId": leaderboard.player_id, "name": "我", "wave": final_wave},
+		]
+		leaderboard.my_rank = 1
+		leaderboard_panel.show_panel()
+		leaderboard_panel.refresh()
+		leaderboard_panel_ok = leaderboard_panel.is_open \
+			and leaderboard_panel._list.get_child_count() == 1 \
+			and leaderboard_panel._status_label.text.contains("离线")
+		leaderboard_panel.hide_panel()
+		leaderboard_panel_ok = leaderboard_panel_ok and not leaderboard_panel.is_open
+	print("INTEGRATION leaderboard_panel=", leaderboard_panel_ok)
+
 	rc.start_new_run()
 	await get_tree().process_frame
 	var weather_reset_ok: bool = WeatherSystem.instance != null \
@@ -252,5 +272,6 @@ func _ready() -> void:
 		and rs_ok and hud_ok and merge_ok and menu_ok and sell_ok \
 		and weather_ok and weather_buff_ok \
 		and picked[0] == 1 and over_ok and best_ok and reset_ok and best_kept \
-		and equipment_ok and panel_ok and equip_kept and terrain_ok and ability_all_ok
+		and equipment_ok and panel_ok and equip_kept and terrain_ok and ability_all_ok \
+		and leaderboard_panel_ok
 	get_tree().quit(0 if ok else 1)
