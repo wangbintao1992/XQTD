@@ -7,6 +7,11 @@ func _ready() -> void:
 	add_child(main)
 	await get_tree().process_frame
 
+	var equip_mgr = EquipmentManagerData.instance
+	if equip_mgr:
+		equip_mgr.persistence_enabled = false
+		equip_mgr.reset_for_test()
+
 	var rc = main.get_node_or_null("RunController")
 	if rc == null:
 		printerr("INTEGRATION: no RunController")
@@ -50,8 +55,11 @@ func _ready() -> void:
 				elite_ok = bool(elite_enemy.kind.get("elite", false))
 				if elite_ok:
 					var before_traits: int = RunStateData.instance.traits.size()
+					var before_eq: int = equip_mgr.inventory.size() if equip_mgr else 0
 					elite_enemy.take_damage(999999)
 					elite_ok = RunStateData.instance.traits.size() > before_traits
+					if equip_mgr:
+						elite_ok = elite_ok and equip_mgr.inventory.size() > before_eq
 
 	var expected_range: float = initial_range * 1.25 * MutationPool.tower_range_mult("che")
 	var pipeline_ok: bool = RunStateData.has("range_plus") \
@@ -134,16 +142,17 @@ func _ready() -> void:
 	var equipment_ok := false
 	var panel_ok := false
 	var equipped_slot := ""
-	var equip_mgr = EquipmentManagerData.instance
 	if equip_mgr:
-		equip_mgr.persistence_enabled = false
 		equip_mgr.reset_for_test()
-		var item: Dictionary = equip_mgr.add_random_drop()
-		equipment_ok = equip_mgr.inventory.size() == 1
-		if equipment_ok:
-			equipped_slot = item.slot
-			equip_mgr.equip(0)
-			equipment_ok = not equip_mgr.equipped[equipped_slot].is_empty()
+		var before_damage: float = che.damage_exact if che else 0.0
+		equip_mgr.inventory.append({
+			"slot": "head", "quality": "orange",
+			"affixes": [{"type": "damage", "value": 0.3}],
+		})
+		equip_mgr.equip(0)
+		equipped_slot = "head"
+		equipment_ok = che != null \
+			and absf(che.damage_exact - before_damage * 1.3) < 0.01
 	var equip_panel = main.get_node_or_null("EquipmentPanel")
 	if equip_panel:
 		equip_panel.show_panel()

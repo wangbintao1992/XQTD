@@ -54,6 +54,7 @@ func _exit_tree() -> void:
 
 
 func reset_for_test() -> void:
+	persistence_enabled = false
 	inventory.clear()
 	equipped = {"head": {}, "hand": {}, "body": {}}
 	changed.emit()

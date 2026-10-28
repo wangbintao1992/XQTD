@@ -15,6 +15,10 @@ func run(t) -> void:
 	em.add_random_drop()
 	panel.refresh()
 	t.check(panel._list != null and panel._list.get_child_count() >= 1, "inventory listed")
+	for _i in 12:
+		em.add_random_drop()
+	panel.refresh()
+	t.check(panel._list.get_child_count() >= 13, "all inventory shown")
 
 	panel.hide_panel()
 	t.check(not panel.is_open, "panel closes")

@@ -109,6 +109,7 @@ func clear_elite() -> void:
 
 
 func grant_elite_reward(_kind: Dictionary) -> void:
+	var msg := ""
 	var owned = RunStateData.instance.traits if RunStateData.instance else []
 	var id := TraitPool.pick_one(owned, ["kumou"])
 	if id != "":
@@ -117,14 +118,18 @@ func grant_elite_reward(_kind: Dictionary) -> void:
 			added = RunStateData.instance.add_trait(id)
 		if added:
 			TraitPool.apply_on_pick(id)
-			_show_toast("精英掉落：" + TraitPool.title(id))
+			msg = "精英掉落：" + TraitPool.title(id)
 	elif qi:
 		qi.earn(100)
-		_show_toast("精英掉落：+100 棋气")
+		msg = "精英掉落：+100 棋气"
 
 	if EquipmentManagerData.instance:
 		var item: Dictionary = EquipmentManagerData.instance.add_random_drop()
-		_show_toast("精英掉落装备：" + EquipmentManagerData.instance.item_name(item))
+		var eq_msg := "装备：" + EquipmentManagerData.instance.item_name(item)
+		msg = (msg + " · " + eq_msg) if msg != "" else "精英掉落" + eq_msg
+
+	if msg != "":
+		_show_toast(msg)
 
 
 func _show_toast(msg: String) -> void:

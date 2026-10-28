@@ -7,6 +7,7 @@ var _root: Control
 var _open := false
 var _slot_labels := {}
 var _list: VBoxContainer
+var _inv_title: Label
 
 
 var is_open: bool:
@@ -21,7 +22,7 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if not (event is InputEventKey) or not event.pressed:
+	if not (event is InputEventKey) or not event.pressed or event.echo:
 		return
 	if event.keycode != KEY_E:
 		return
@@ -42,6 +43,8 @@ func toggle() -> void:
 
 
 func show_panel() -> void:
+	if EquipmentManagerData.instance == null:
+		return
 	_open = true
 	_build()
 	refresh()
@@ -125,11 +128,15 @@ func _build() -> void:
 	inv_title.add_theme_font_size_override("font_size", 18)
 	inv_title.add_theme_color_override("font_color", Color(0.35, 0.28, 0.23))
 	panel.add_child(inv_title)
+	_inv_title = inv_title
 
+	var scroll := ScrollContainer.new()
+	scroll.position = Vector2(28, y + 40)
+	scroll.size = Vector2(584, 220)
+	panel.add_child(scroll)
 	_list = VBoxContainer.new()
-	_list.position = Vector2(28, y + 40)
-	_list.size = Vector2(584, 220)
-	panel.add_child(_list)
+	_list.custom_minimum_size = Vector2(560, 0)
+	scroll.add_child(_list)
 
 
 func refresh() -> void:
@@ -147,11 +154,14 @@ func refresh() -> void:
 			else:
 				label.text = slot_name + "：" + em.item_name(item) + "  " + em.affix_text(item)
 
+	if _inv_title:
+		_inv_title.text = "库存 %d 件（点击穿戴）" % em.inventory.size()
+
 	for child in _list.get_children():
 		child.queue_free()
 
 	var font := UiFont.make()
-	var count: int = mini(10, em.inventory.size())
+	var count: int = em.inventory.size()
 	for i in count:
 		var item: Dictionary = em.inventory[i]
 		var btn := Button.new()
@@ -162,6 +172,5 @@ func refresh() -> void:
 		var index := i
 		btn.pressed.connect(func():
 			em.equip(index)
-			refresh()
 		)
 		_list.add_child(btn)

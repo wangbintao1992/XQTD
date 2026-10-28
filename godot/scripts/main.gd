@@ -17,7 +17,6 @@ extends Node2D
 @onready var tower_detail: TowerDetail = $TowerDetail
 @onready var weather: WeatherSystem = $Weather
 @onready var combo: ComboSystem = $ComboSystem
-@onready var equipment_panel: EquipmentPanel = $EquipmentPanel
 
 var graph: PathGraph
 
@@ -49,6 +48,8 @@ func _ready() -> void:
 		RunStateData.instance.traits_changed.connect(_refresh_tower_traits)
 		RunStateData.instance.mutation_changed.connect(_refresh_tower_traits)
 	weather.weather_changed.connect(func(_w: String): _refresh_tower_traits())
+	if EquipmentManagerData.instance:
+		EquipmentManagerData.instance.changed.connect(_refresh_tower_traits)
 
 	hud.set_wave(wave.wave, 0 if wave.endless else wave.max_wave)
 	hud.set_progress(0.0)
