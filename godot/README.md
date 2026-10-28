@@ -96,7 +96,8 @@ XQTD_LEADERBOARD_URL=http://127.0.0.1:8080 \
 
 - 后端在 `server/`：Java 21 + Spring Boot + H2，默认 `http://127.0.0.1:8080`。
 - 启动时自动拉 Top；生命归零自动上报最终波数；本地最高立即生效，离线不阻塞。
-- 按 **L** 打开排行榜：Top 10、个人最高/排名、昵称修改、手动刷新。
+- 离线期间刷新的最高会记 `pendingReport`，下次联网/刷新时自动补报。
+- 游戏中或结束后按 **L** 打开排行榜：Top 10、个人最高/排名、昵称修改、手动刷新。
 - 玩家身份存 `user://leaderboard_profile.json`（UUID + 昵称 + 最高波数），跨启动保留。
 - 服务地址：环境变量 `XQTD_LEADERBOARD_URL` > `project.godot` 的 `xqtd/leaderboard_url` > 默认地址。
 - 起后端：`cd server && ./mvnw spring-boot:run`；详见 `server/README.md`。

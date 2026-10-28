@@ -28,6 +28,12 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if not (event is InputEventKey) or not event.pressed or event.echo:
 		return
+	if event.keycode == KEY_ESCAPE and _open:
+		hide_panel()
+		var viewport := get_viewport()
+		if viewport:
+			viewport.set_input_as_handled()
+		return
 	if event.keycode != KEY_L:
 		return
 	if _name_edit and _name_edit.has_focus():
@@ -69,8 +75,10 @@ func hide_panel() -> void:
 func save_name() -> void:
 	if LeaderboardData.instance == null or _name_edit == null:
 		return
+	var before := LeaderboardData.instance.player_name
 	LeaderboardData.instance.set_player_name(_name_edit.text)
-	Toast.show("昵称已保存")
+	if LeaderboardData.instance.player_name != before:
+		Toast.show("昵称已保存")
 	refresh()
 
 
@@ -79,12 +87,13 @@ func refresh() -> void:
 		return
 	var lb := LeaderboardData.instance
 
-	if lb.online:
-		_status_label.text = "已连接 · " + lb.server_url
+	if not lb.online:
+		var reason := lb.last_error if lb.last_error != "" else "本地最高 %d 波" % lb.best_wave
+		_status_label.text = "离线 · " + reason + " · " + lb.server_url
 	elif lb.last_error != "":
-		_status_label.text = "离线 · " + lb.last_error
+		_status_label.text = "错误 · " + lb.last_error + " · " + lb.server_url
 	else:
-		_status_label.text = "离线 · 本地最高 %d 波" % lb.best_wave
+		_status_label.text = "已连接 · " + lb.server_url
 
 	if lb.my_rank > 0:
 		_me_label.text = "我的最高：第 %d 波 · 排名 #%d" % [lb.best_wave, lb.my_rank]
@@ -194,6 +203,7 @@ func _build() -> void:
 	_name_edit.max_length = LeaderboardData.MAX_NAME_LENGTH
 	_name_edit.add_theme_font_override("font", font)
 	_name_edit.add_theme_font_size_override("font_size", 18)
+	_name_edit.text_submitted.connect(func(_text): save_name())
 	panel.add_child(_name_edit)
 
 	var save_btn := Button.new()
@@ -212,9 +222,13 @@ func _build() -> void:
 	refresh_btn.add_theme_font_override("font", font)
 	refresh_btn.add_theme_font_size_override("font_size", 18)
 	refresh_btn.pressed.connect(func():
-		if LeaderboardData.instance:
+		if LeaderboardData.instance == null:
+			return
+		if LeaderboardData.instance.http_enabled:
 			LeaderboardData.instance.refresh()
 			Toast.show("正在刷新排行榜…")
+		else:
+			refresh()
 	)
 	panel.add_child(refresh_btn)
 

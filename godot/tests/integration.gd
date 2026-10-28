@@ -245,12 +245,11 @@ func _ready() -> void:
 		leaderboard_panel_ok = leaderboard_panel.is_open \
 			and leaderboard_panel._list.get_child_count() == 1 \
 			and leaderboard_panel._status_label.text.contains("离线")
-		leaderboard_panel.hide_panel()
-		leaderboard_panel_ok = leaderboard_panel_ok and not leaderboard_panel.is_open
-	print("INTEGRATION leaderboard_panel=", leaderboard_panel_ok)
 
 	rc.start_new_run()
 	await get_tree().process_frame
+	var leaderboard_reset_ok: bool = leaderboard_panel != null and not leaderboard_panel.is_open
+	print("INTEGRATION leaderboard_panel=", leaderboard_panel_ok, " leaderboard_reset=", leaderboard_reset_ok)
 	var weather_reset_ok: bool = WeatherSystem.instance != null \
 		and WeatherSystem.instance.current_weather == "rain" \
 		and hud != null and hud.weather_label.text == "天气：雨"
@@ -273,5 +272,5 @@ func _ready() -> void:
 		and weather_ok and weather_buff_ok \
 		and picked[0] == 1 and over_ok and best_ok and reset_ok and best_kept \
 		and equipment_ok and panel_ok and equip_kept and terrain_ok and ability_all_ok \
-		and leaderboard_panel_ok
+		and leaderboard_panel_ok and leaderboard_reset_ok
 	get_tree().quit(0 if ok else 1)

@@ -34,6 +34,14 @@ func run(t) -> void:
 	panel.hide_panel()
 	t.check(not panel.is_open, "panel closes")
 
+	panel.show_panel()
+	t.check(panel.is_open, "panel reopens")
+	var esc := InputEventKey.new()
+	esc.keycode = KEY_ESCAPE
+	esc.pressed = true
+	panel._input(esc)
+	t.check(not panel.is_open, "escape closes")
+
 	panel.free()
 	lb.free()
 	LeaderboardData.instance = prev

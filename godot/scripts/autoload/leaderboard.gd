@@ -26,9 +26,11 @@ var top_entries: Array = []
 var my_rank := 0
 var online := false
 var last_error := ""
+var pending_report := false
 var persistence_enabled := true
 var http_enabled := true
 var profile_path := "user://leaderboard_profile.json"
+var report_sender := Callable()
 
 
 func _init() -> void:
@@ -37,9 +39,17 @@ func _init() -> void:
 
 func _ready() -> void:
 	server_url = _resolve_server_url()
+	if DisplayServer.get_name() == "headless" \
+		and OS.get_environment("XQTD_LEADERBOARD_LIVE") != "1":
+		# 无头测试/冒烟不读真实存档、不联网，避免污染与不确定状态
+		persistence_enabled = false
+		http_enabled = false
+		_ensure_identity()
+		return
 	if persistence_enabled:
 		load_profile()
 	_ensure_identity()
+	save_profile()
 	if http_enabled:
 		refresh()
 
@@ -59,14 +69,18 @@ func reset_for_test() -> void:
 	my_rank = 0
 	online = false
 	last_error = ""
+	pending_report = false
 	server_url = DEFAULT_SERVER_URL
 
 
 func submit(wave: int) -> bool:
 	var w := maxi(0, wave)
 	if w <= best_wave:
+		if pending_report and http_enabled and not player_id.is_empty():
+			_post_report(best_wave)
 		return false
 	best_wave = w
+	pending_report = true
 	best_changed.emit(best_wave)
 	save_profile()
 	if http_enabled and not player_id.is_empty():
@@ -96,13 +110,23 @@ func set_player_name(raw: String) -> void:
 func save_profile() -> void:
 	if not persistence_enabled:
 		return
-	var file := FileAccess.open(profile_path, FileAccess.WRITE)
-	if file:
-		file.store_string(JSON.stringify({
-			"playerId": player_id,
-			"name": player_name,
-			"bestWave": best_wave,
-		}))
+	var tmp_path := profile_path + ".tmp"
+	var file := FileAccess.open(tmp_path, FileAccess.WRITE)
+	if file == null:
+		return
+	file.store_string(JSON.stringify({
+		"playerId": player_id,
+		"name": player_name,
+		"bestWave": best_wave,
+		"pendingReport": pending_report,
+	}))
+	file.close()
+	var from := ProjectSettings.globalize_path(tmp_path)
+	var to := ProjectSettings.globalize_path(profile_path)
+	var err := DirAccess.rename_absolute(from, to)
+	if err != OK:
+		DirAccess.remove_absolute(to)
+		DirAccess.rename_absolute(from, to)
 
 
 func load_profile() -> void:
@@ -111,8 +135,13 @@ func load_profile() -> void:
 	var file := FileAccess.open(profile_path, FileAccess.READ)
 	if file == null:
 		return
-	var parsed = JSON.parse_string(file.get_as_text())
+	var raw := file.get_as_text()
+	var parsed = JSON.parse_string(raw)
 	if not (parsed is Dictionary):
+		var backup := FileAccess.open(profile_path + ".bak", FileAccess.WRITE)
+		if backup:
+			backup.store_string(raw)
+		last_error = "排行榜存档损坏，已备份"
 		return
 	if parsed.has("playerId"):
 		player_id = str(parsed.playerId)
@@ -122,6 +151,7 @@ func load_profile() -> void:
 	if loaded_best > best_wave:
 		best_wave = loaded_best
 		best_changed.emit(best_wave)
+	pending_report = bool(parsed.get("pendingReport", false))
 
 
 func new_player_id() -> String:
@@ -166,6 +196,11 @@ func sanitize_name(raw: String) -> String:
 
 
 func _post_report(wave: int) -> void:
+	pending_report = true
+	save_profile()
+	if report_sender.is_valid():
+		report_sender.call(wave)
+		return
 	_request_json("POST", "/api/leaderboard/reports", {
 		"playerId": player_id,
 		"name": player_name,
@@ -206,23 +241,34 @@ func _request_json(method: String, path: String, body: Dictionary, callback: Cal
 	http.request_completed.connect(
 		func(result: int, code: int, _headers: PackedStringArray, data: PackedByteArray) -> void:
 			http.queue_free()
-			if result != HTTPRequest.RESULT_SUCCESS or code < 200 or code >= 300:
-				_mark_offline("排行榜请求失败（%d）" % code)
+			if result != HTTPRequest.RESULT_SUCCESS:
+				var reason := "请求超时" if result == HTTPRequest.RESULT_TIMEOUT else "无法连接排行榜服务器"
+				_mark_offline(reason)
+				callback.call(0, {})
+				return
+			if code < 200 or code >= 300:
+				_mark_http_error(code)
 				callback.call(code, {})
 				return
 			var parsed = JSON.parse_string(data.get_string_from_utf8())
 			if parsed is Dictionary:
 				callback.call(code, parsed)
 			else:
-				_mark_offline("排行榜返回格式错误")
-				callback.call(code, {})
+				_mark_error("排行榜返回格式错误")
+				callback.call(0, {})
 	)
 
 
 func _on_report(code: int, data: Dictionary) -> void:
 	if code < 200 or code >= 300:
+		if code >= 400 and code < 500:
+			pending_report = false
+			save_profile()
 		return
+	var accepted := bool(data.get("accepted", false))
 	_apply_report_response(data)
+	if accepted:
+		_fetch_top()
 	if my_rank > 0:
 		Toast.show("排行榜：第 %d 名（第 %d 波）" % [my_rank, best_wave])
 
@@ -244,6 +290,8 @@ func _apply_report_response(data: Dictionary) -> void:
 	if server_best > best_wave:
 		best_wave = server_best
 		best_changed.emit(best_wave)
+	pending_report = false
+	save_profile()
 	my_rank = int(data.get("rank", my_rank))
 	_mark_online()
 	submitted.emit(bool(data.get("accepted", false)), my_rank, best_wave)
@@ -267,8 +315,21 @@ func _apply_player_response(data: Dictionary) -> void:
 		if server_best > best_wave:
 			best_wave = server_best
 			best_changed.emit(best_wave)
+			save_profile()
+		if best_wave > server_best:
+			pending_report = true
+			save_profile()
+			_post_report(best_wave)
+		elif pending_report:
+			pending_report = false
+			save_profile()
 	else:
 		my_rank = 0
+		if best_wave > 0:
+			# 服务端没有记录（例如离线期间刷新了最高）：补报本地最高
+			pending_report = true
+			save_profile()
+			_post_report(best_wave)
 	_mark_online()
 
 
@@ -282,3 +343,13 @@ func _mark_offline(message: String) -> void:
 	online = false
 	last_error = message
 	sync_changed.emit(false, message)
+
+
+func _mark_error(message: String) -> void:
+	online = true
+	last_error = message
+	sync_changed.emit(true, message)
+
+
+func _mark_http_error(code: int) -> void:
+	_mark_error("排行榜返回错误（%d）" % code)

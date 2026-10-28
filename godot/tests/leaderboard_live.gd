@@ -17,9 +17,11 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 
+	_lb.reset_for_test()
 	_lb.persistence_enabled = false
 	_lb.http_enabled = true
-	_lb.player_id = "live-test-player"
+	_lb.server_url = _lb._resolve_server_url()
+	_lb.player_id = "live-test-" + str(int(Time.get_unix_time_from_system()))
 	_lb.player_name = "联调棋手"
 	_lb.submitted.connect(func(accepted, _rank, _best): _submitted = true; _accepted = accepted)
 

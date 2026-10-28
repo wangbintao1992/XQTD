@@ -55,6 +55,21 @@ func run(t) -> void:
 	lb._apply_player_response({"found": false, "bestWave": 0, "rank": null})
 	t.eq(lb.my_rank, 0, "missing player rank reset")
 
+	# 离线最高补报：提交失败后 pending=true，玩家查询发现服务端没有记录时重发
+	lb.reset_for_test()
+	var sent: Array = []
+	lb.http_enabled = true
+	lb.report_sender = func(w): sent.append(w)
+	t.check(lb.submit(18), "offline best accepted locally")
+	t.eq(sent, [18], "first report attempted")
+	t.check(lb.pending_report, "pending after local improve")
+	lb._apply_player_response({"found": false, "bestWave": 0, "rank": null})
+	t.eq(sent, [18, 18], "offline best re-sent when server missing")
+	lb._apply_report_response({"accepted": true, "bestWave": 18, "rank": 1})
+	t.check(not lb.pending_report, "pending cleared after server accepts")
+	lb._apply_player_response({"found": true, "bestWave": 0, "rank": 1})
+	t.eq(sent, [18, 18, 18], "server behind re-sends local best")
+
 	lb.set_player_name("  Alice  ")
 	t.eq(lb.player_name, "Alice", "name trimmed")
 	lb.set_player_name("12345678901234567890")
@@ -71,6 +86,7 @@ func run(t) -> void:
 	lb2.player_id = "test-player-01"
 	lb2.player_name = "Alice"
 	lb2.best_wave = 33
+	lb2.pending_report = true
 	lb2.save_profile()
 
 	var lb3 = preload("res://scripts/autoload/leaderboard.gd").new()
@@ -81,9 +97,25 @@ func run(t) -> void:
 	t.eq(lb3.player_id, "test-player-01", "profile player id roundtrip")
 	t.eq(lb3.player_name, "Alice", "profile name roundtrip")
 	t.eq(lb3.best_wave, 33, "profile best roundtrip")
+	t.check(lb3.pending_report, "pending roundtrip")
+
+	var corrupt_path := "user://test_leaderboard_corrupt.json"
+	var corrupt := FileAccess.open(corrupt_path, FileAccess.WRITE)
+	corrupt.store_string("{not json")
+	corrupt.close()
+	var lb4 = preload("res://scripts/autoload/leaderboard.gd").new()
+	lb4.persistence_enabled = true
+	lb4.http_enabled = false
+	lb4.profile_path = corrupt_path
+	lb4.load_profile()
+	t.check(lb4.last_error.contains("损坏"), "corrupt profile reported")
+	t.check(FileAccess.file_exists(corrupt_path + ".bak"), "corrupt profile backed up")
 
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(corrupt_path))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(corrupt_path + ".bak"))
 	lb2.free()
 	lb3.free()
+	lb4.free()
 	lb.free()
 	LeaderboardData.instance = prev
