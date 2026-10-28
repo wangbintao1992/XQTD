@@ -6,6 +6,10 @@ func run(t) -> void:
 	var lb = preload("res://scripts/autoload/leaderboard.gd").new()
 	lb.reset_for_test()
 	t.eq(lb.best_wave, 0, "starts at 0")
+	t.eq(lb.player_name, "无名棋手", "default name")
+	t.eq(lb.player_id.length(), 36, "uuid length")
+	t.check(lb.player_id.contains("-"), "uuid shape")
+	t.check(not lb.online, "starts offline")
 
 	var changed := [0]
 	lb.best_changed.connect(func(_v): changed[0] += 1)
@@ -18,8 +22,68 @@ func run(t) -> void:
 	t.eq(lb.best_wave, 20, "best 20")
 	t.eq(changed[0], 2, "signal only on improve")
 
+	var submitted := [0]
+	lb.submitted.connect(func(_accepted, _rank, _best): submitted[0] += 1)
+
+	lb._apply_report_response({"accepted": true, "bestWave": 30, "rank": 2})
+	t.eq(lb.best_wave, 30, "server best raises local")
+	t.eq(lb.my_rank, 2, "server rank applied")
+	t.check(lb.online, "online after report")
+	t.eq(submitted[0], 1, "submitted signal")
+
+	lb._apply_report_response({"accepted": false, "bestWave": 30, "rank": 2})
+	t.eq(lb.best_wave, 30, "lower server best keeps local")
+
+	lb._apply_report_response({"accepted": true, "bestWave": 42, "rank": 1})
+	t.eq(lb.best_wave, 42, "higher server best applied")
+	t.eq(lb.my_rank, 1, "rank updated")
+
+	lb._apply_top_response({
+		"entries": [
+			{"rank": 1, "playerId": "p1", "name": "甲", "wave": 42},
+			{"rank": 2, "playerId": "p2", "name": "乙", "wave": 31},
+		],
+	})
+	t.eq(lb.top_entries.size(), 2, "top entries parsed")
+	t.eq(lb.top_entries[0].name, "甲", "top name")
+	t.eq(lb.top_entries[1].wave, 31, "top wave")
+
+	lb._apply_player_response({"found": true, "bestWave": 50, "rank": 1})
+	t.eq(lb.best_wave, 50, "player best applied")
+	t.eq(lb.my_rank, 1, "player rank applied")
+
+	lb._apply_player_response({"found": false, "bestWave": 0, "rank": null})
+	t.eq(lb.my_rank, 0, "missing player rank reset")
+
+	lb.set_player_name("  Alice  ")
+	t.eq(lb.player_name, "Alice", "name trimmed")
+	lb.set_player_name("12345678901234567890")
+	t.eq(lb.player_name.length(), 16, "name capped")
+
 	lb.reset_for_test()
 	t.eq(lb.best_wave, 0, "reset for test")
 
+	var path := "user://test_leaderboard_profile.json"
+	var lb2 = preload("res://scripts/autoload/leaderboard.gd").new()
+	lb2.persistence_enabled = true
+	lb2.http_enabled = false
+	lb2.profile_path = path
+	lb2.player_id = "test-player-01"
+	lb2.player_name = "Alice"
+	lb2.best_wave = 33
+	lb2.save_profile()
+
+	var lb3 = preload("res://scripts/autoload/leaderboard.gd").new()
+	lb3.persistence_enabled = true
+	lb3.http_enabled = false
+	lb3.profile_path = path
+	lb3.load_profile()
+	t.eq(lb3.player_id, "test-player-01", "profile player id roundtrip")
+	t.eq(lb3.player_name, "Alice", "profile name roundtrip")
+	t.eq(lb3.best_wave, 33, "profile best roundtrip")
+
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	lb2.free()
+	lb3.free()
 	lb.free()
 	LeaderboardData.instance = prev
