@@ -62,7 +62,7 @@ func _process(delta: float) -> void:
 		return
 
 	var mult := slow_factor if slow_timer > 0.0 else 1.0
-	dist += speed * mult * delta
+	dist += speed * mult * WeatherSystem.enemy_speed_mult() * delta
 	var guard := 0
 	while guard < 64:
 		guard += 1

@@ -1,6 +1,17 @@
 class_name WeatherSystem
 extends Node2D
 
+signal weather_changed(weather_name: String)
+
+static var instance: WeatherSystem
+
+const DISPLAY := {
+	"rain": "雨",
+	"snow": "雪",
+	"fog": "雾",
+	"storm": "雷暴",
+}
+
 ## 每 stage_size 个敌人换一种天气：雨 → 雪 → 雾 → 雷暴 → 循环。
 
 @export var stage_size := 30
@@ -14,6 +25,15 @@ var layers := {}
 var _last_stage := -1
 var _current := ""
 var current_weather := ""
+
+
+func _init() -> void:
+	instance = self
+
+
+func _exit_tree() -> void:
+	if instance == self:
+		instance = null
 
 const PRESETS := [
 	{
@@ -135,11 +155,51 @@ func set_weather(weather_name: String) -> void:
 		for node in layers[key]:
 			node.emitting = (key == weather_name)
 			node.visible = (key == weather_name)
+	weather_changed.emit(weather_name)
 
 
 func reset() -> void:
 	_last_stage = -1
 	apply_stage(0)
+
+
+static func display_name(id: String) -> String:
+	return str(DISPLAY.get(id, id))
+
+
+static func _current_weather() -> String:
+	return instance._current if instance else ""
+
+
+static func tower_damage_mult() -> float:
+	match _current_weather():
+		"fog":
+			return 0.9
+		"storm":
+			return 1.1
+		_:
+			return 1.0
+
+
+static func tower_range_mult() -> float:
+	return 0.9 if _current_weather() == "snow" else 1.0
+
+
+static func tower_interval_mult() -> float:
+	var cur := _current_weather()
+	return 0.95 if cur == "rain" or cur == "storm" else 1.0
+
+
+static func enemy_speed_mult() -> float:
+	match _current_weather():
+		"rain":
+			return 0.95
+		"snow":
+			return 0.9
+		"storm":
+			return 1.05
+		_:
+			return 1.0
 
 
 func _spawned_total() -> int:

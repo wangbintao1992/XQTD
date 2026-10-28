@@ -57,6 +57,7 @@ func run(t) -> void:
 	t.eq(towers.get_child_count(), 3, "different kind places a new tower")
 
 	# 满级不再合成，也不叠放
+	qi.earn(100)
 	che.level = 3
 	che.apply_traits()
 	var count := towers.get_child_count()

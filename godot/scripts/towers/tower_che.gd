@@ -39,9 +39,9 @@ func _ready() -> void:
 
 
 func apply_traits() -> void:
-	damage = maxi(1, int(round(float(base_damage) * trait_damage_mult() * mutation_damage_mult() * level_damage_mult())))
-	attack_range = base_range * trait_range_mult() * mutation_range_mult() * level_range_mult()
-	fire_interval = base_interval * trait_interval_mult() * mutation_interval_mult() * level_interval_mult()
+	damage = maxi(1, int(round(float(base_damage) * trait_damage_mult() * mutation_damage_mult() * level_damage_mult() * weather_damage_mult())))
+	attack_range = base_range * trait_range_mult() * mutation_range_mult() * level_range_mult() * weather_range_mult()
+	fire_interval = base_interval * trait_interval_mult() * mutation_interval_mult() * level_interval_mult() * weather_interval_mult()
 
 
 func trait_damage_mult() -> float:

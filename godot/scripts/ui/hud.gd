@@ -10,12 +10,13 @@ extends CanvasLayer
 @onready var progress: ProgressBar = $Root/ProgressBar
 @onready var trait_label: Label = $Root/TraitLabel
 @onready var mutation_label: Label = $Root/MutationLabel
+@onready var weather_label: Label = $Root/WeatherLabel
 @onready var best_label: Label = $Root/BestLabel
 
 
 func _ready() -> void:
 	var font := UiFont.make()
-	for label in [qi_label, lives_label, wave_label, tip_label, trait_label, mutation_label, best_label]:
+	for label in [qi_label, lives_label, wave_label, tip_label, trait_label, mutation_label, weather_label, best_label]:
 		label.add_theme_font_override("font", font)
 
 	set_qi(100)
@@ -37,6 +38,12 @@ func _ready() -> void:
 	if LeaderboardData.instance:
 		LeaderboardData.instance.best_changed.connect(set_best)
 		set_best(LeaderboardData.instance.best_wave)
+
+	if WeatherSystem.instance:
+		WeatherSystem.instance.weather_changed.connect(set_weather_label)
+		set_weather_label(WeatherSystem.instance.current_weather)
+	else:
+		set_weather_label("")
 
 	var qi = get_node_or_null("/root/Qi")
 	if qi:
@@ -100,3 +107,7 @@ func set_mutation(id: String) -> void:
 
 func set_best(value: int) -> void:
 	best_label.text = "最高波数 %d" % value
+
+
+func set_weather_label(id: String) -> void:
+	weather_label.text = "天气：—" if id == "" else "天气：" + WeatherSystem.display_name(id)

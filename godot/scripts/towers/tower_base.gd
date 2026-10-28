@@ -98,6 +98,18 @@ func mutation_interval_mult() -> float:
 	return MutationPool.tower_interval_mult(tower_kind)
 
 
+func weather_damage_mult() -> float:
+	return WeatherSystem.tower_damage_mult()
+
+
+func weather_range_mult() -> float:
+	return WeatherSystem.tower_range_mult()
+
+
+func weather_interval_mult() -> float:
+	return WeatherSystem.tower_interval_mult()
+
+
 func spread_hit(source: Node, amount: int) -> void:
 	if not RunStateData.has("splash_hit") or enemies_root == null:
 		return

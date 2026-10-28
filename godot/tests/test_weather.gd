@@ -18,6 +18,7 @@ class FakeLives:
 
 
 func run(t) -> void:
+	var prev = WeatherSystem.instance
 	var w = preload("res://scripts/core/weather_system.gd").new()
 	w.build_layers()
 	t.eq(w.stage_for(0), 0, "stage 0")
@@ -59,3 +60,4 @@ func run(t) -> void:
 	t.check(w.layers["storm"][0].visible, "weather resumes")
 
 	w.free()
+	WeatherSystem.instance = prev

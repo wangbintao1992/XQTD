@@ -57,6 +57,20 @@ func _ready() -> void:
 	var pipeline_ok: bool = RunStateData.has("range_plus") \
 		and che != null and absf(che.attack_range - expected_range) < 0.5
 	var endless_ok: bool = wave != null and wave.wave >= 10
+
+	var merge_ok := false
+	if che and placement:
+		var before_range: float = che.attack_range
+		var che_screen: Vector2 = che.global_position
+		placement.begin_drag(load("res://scenes/towers/tower_che.tscn"), 50,
+			load("res://art/qz/b_che.png"), che_screen, "che")
+		var mev := InputEventMouseButton.new()
+		mev.button_index = MOUSE_BUTTON_LEFT
+		mev.pressed = false
+		mev.position = che_screen
+		placement._input(mev)
+		merge_ok = che.level == 2 and che.attack_range > before_range
+	print("INTEGRATION merge=", merge_ok)
 	print("INTEGRATION pipeline=", pipeline_ok, " endless=", endless_ok, " wave=", wave.wave, " elite=", elite_ok)
 
 	var rs_ok: bool = RunStateData.instance != null and RunStateData.has("range_plus")
@@ -101,7 +115,12 @@ func _ready() -> void:
 	if weather:
 		weather.set_weather("rain")
 	var weather_ok: bool = weather != null and weather.layers["rain"][0].visible
-	print("INTEGRATION weather=", weather_ok)
+	var weather_buff_ok := false
+	if weather:
+		weather.set_weather("snow")
+		weather_buff_ok = absf(WeatherSystem.tower_range_mult() - 0.9) < 0.001 \
+			and hud != null and hud.weather_label.text.find("雪") >= 0
+	print("INTEGRATION weather=", weather_ok, " weather_buff=", weather_buff_ok)
 
 	var picked := [0]
 	if card_picker:
