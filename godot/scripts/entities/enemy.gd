@@ -154,6 +154,10 @@ func _refresh_overlay() -> void:
 func _play_hit_effect() -> void:
 	if _hit == null:
 		return
+	if _hit.has_meta("fade_tween"):
+		var previous = _hit.get_meta("fade_tween")
+		if previous is Tween:
+			previous.kill()
 	_hit.texture = HIT_TEXTURE
 	var tex_size: Vector2 = HIT_TEXTURE.get_size()
 	_hit.scale = Vector2(96.0 / maxf(1.0, tex_size.x), 96.0 / maxf(1.0, tex_size.y))
@@ -162,6 +166,8 @@ func _play_hit_effect() -> void:
 	if is_inside_tree():
 		var tw := create_tween()
 		tw.tween_property(_hit, "modulate:a", 0.0, 1.0)
+		tw.finished.connect(func(): _hit.visible = false)
+		_hit.set_meta("fade_tween", tw)
 
 
 func _on_walker_reached_base(cost: int) -> void:

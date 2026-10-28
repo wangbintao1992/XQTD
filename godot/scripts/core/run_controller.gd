@@ -113,7 +113,7 @@ func reset_run() -> void:
 		if wave:
 			shown_max = 0 if wave.endless else wave.max_wave
 		hud.set_wave(1, shown_max)
-		hud.set_progress(0.0)
+		hud.reset_progress()
 		hud.set_tip("")
 
 

@@ -78,9 +78,8 @@ func set_wave(w: int, max_wave: int) -> void:
 
 
 func _process(delta: float) -> void:
-	_display_progress = move_toward(
-		_display_progress, _target_progress, BAR_SMOOTH_SPEED * delta
-	)
+	_display_progress += (_target_progress - _display_progress) \
+		* minf(1.0, BAR_SMOOTH_SPEED * delta)
 	var bar := _bar()
 	if bar:
 		bar.value = _display_progress * 100.0
@@ -88,6 +87,14 @@ func _process(delta: float) -> void:
 
 func set_progress(p: float) -> void:
 	_target_progress = clampf(p, 0.0, 1.0)
+
+
+func reset_progress() -> void:
+	_target_progress = 0.0
+	_display_progress = 0.0
+	var bar := _bar()
+	if bar:
+		bar.value = 0.0
 
 
 func _bar() -> ProgressBar:

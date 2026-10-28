@@ -113,6 +113,8 @@ func _raycast_once(origin: Vector2, dir: Vector2) -> int:
 
 
 func _build_flash_lines() -> void:
+	if not _flash_lines.is_empty():
+		return
 	for dir in DIRS:
 		var line := Line2D.new()
 		line.width = 4.0
@@ -132,14 +134,17 @@ func _flash(dir: Vector2) -> void:
 	line.points = PackedVector2Array([Vector2.ZERO, dir * attack_range])
 	line.visible = true
 	line.modulate.a = 1.0
-	var previous = line.get_meta("fade_tween", null)
-	if previous is Tween:
-		previous.kill()
 	if is_inside_tree():
+		if line.has_meta("fade_tween"):
+			var previous = line.get_meta("fade_tween")
+			if previous is Tween:
+				previous.kill()
 		var tw := create_tween()
 		tw.tween_property(line, "modulate:a", 0.0, 0.18)
 		tw.finished.connect(func(): line.visible = false)
 		line.set_meta("fade_tween", tw)
+	else:
+		line.visible = false
 
 
 func _distance_to_segment(p: Vector2, a: Vector2, b: Vector2) -> float:

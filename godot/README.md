@@ -107,9 +107,10 @@ XQTD_LEADERBOARD_URL=http://127.0.0.1:8080 \
 
 - 波次条按 Cocos `bg.scene` 对齐：厚 7、轨道 `#3C3834`、填充 `#B23A2C`、`barSmoothSpeed=5` 平滑。
 - Stage / WaveText / RoundTip 位置按原场景 y 对齐。
-- 墨刃正片叠底：`InkFx` 统一 `CanvasItemMaterial.BLEND_MODE_MUL`，可一键回退 alpha；已接车/马/炮/组合技/墨点。
+- 墨刃正片叠底：`InkFx` 用 alpha-aware `blend_mul` 着色器（等价 Cocos `DST_COLOR + ONE_MINUS_SRC_ALPHA`），透明区不黑、淡出有效；已接车/马/炮/组合技/墨点。
+- 回退：代码里 `InkFx.set_enabled(false)` 可清空已应用材质；启动时可用 `project.godot` 的 `xqtd/ink_multiply=false` 退回 alpha。
 - 车攻击线固定 4 条复用，不再每次开火 `new Line2D`。
-- 仍缺：标题卷轴/印章按截图对齐、天气粒子手感、500 敌人 60fps 压测、字体子集、`draw_network` 调试红线。
+- 仍缺：光刃 `che_attack1/2` 贴图与完整对象池、标题卷轴/印章按截图对齐、天气粒子手感、500 敌人 60fps 压测、字体子集、`draw_network` 调试红线。
 - 真无尽已开启（波次无限）；每 10 波异变 / 每 5 波精英已在 R2 接入。
 
 ## 目录

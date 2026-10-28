@@ -36,3 +36,4 @@ renderer/rendering_method.mobile="gl_compatibility"
 [xqtd]
 
 leaderboard_url="http://127.0.0.1:8080"
+ink_multiply=true

@@ -50,9 +50,11 @@ func run(t) -> void:
 
 	hud.set_progress(0.5)
 	hud._process(0.05)
-	t.approx(bar.value, 25.0, 0.5, "progress smooth midpoint")
+	t.approx(bar.value, 12.5, 0.5, "progress smooth midpoint")
 	hud._process(1.0)
 	t.approx(bar.value, 50.0, 0.5, "progress reaches target")
+	hud.reset_progress()
+	t.eq(bar.value, 0.0, "progress snaps on reset")
 
 	hud.free()
 	sidebar.free()

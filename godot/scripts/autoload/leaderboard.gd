@@ -136,7 +136,7 @@ func load_profile() -> void:
 	if file == null:
 		return
 	var raw := file.get_as_text()
-	var parsed = JSON.parse_string(raw)
+	var parsed = _parse_json(raw)
 	if not (parsed is Dictionary):
 		var backup := FileAccess.open(profile_path + ".bak", FileAccess.WRITE)
 		if backup:
@@ -250,7 +250,7 @@ func _request_json(method: String, path: String, body: Dictionary, callback: Cal
 				_mark_http_error(code)
 				callback.call(code, {})
 				return
-			var parsed = JSON.parse_string(data.get_string_from_utf8())
+			var parsed = _parse_json(data.get_string_from_utf8())
 			if parsed is Dictionary:
 				callback.call(code, parsed)
 			else:
@@ -331,6 +331,13 @@ func _apply_player_response(data: Dictionary) -> void:
 			save_profile()
 			_post_report(best_wave)
 	_mark_online()
+
+
+func _parse_json(text: String):
+	var parser := JSON.new()
+	if parser.parse(text) != OK:
+		return null
+	return parser.data
 
 
 func _mark_online() -> void:

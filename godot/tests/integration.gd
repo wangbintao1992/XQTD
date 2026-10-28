@@ -153,7 +153,7 @@ func _ready() -> void:
 			and absf(fill_style.bg_color.r - 178.0 / 255.0) < 0.001
 	var ink_ok: bool = InkFx.multiply_enabled and che != null \
 		and che._flash_lines.size() == 4 \
-		and che._flash_lines[0].material is CanvasItemMaterial
+		and che._flash_lines[0].material is ShaderMaterial
 	print("INTEGRATION hud_style=", hud_style_ok, " ink=", ink_ok)
 
 	var pao = placement.place(load("res://scenes/towers/tower_pao.tscn"), spot) if spot != null else null
