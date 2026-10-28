@@ -56,8 +56,19 @@ func _ready() -> void:
 				if elite_ok:
 					var before_traits: int = RunStateData.instance.traits.size()
 					var before_eq: int = equip_mgr.inventory.size() if equip_mgr else 0
+					var ability_ok: bool = elite_enemy.elite_type != ""
+					if elite_enemy.elite_type == "che" or elite_enemy.elite_type == "pao":
+						elite_enemy._use_elite_ability()
+						var stunned := false
+						for tw in main.get_node("Towers").get_children():
+							if tw.has_method("tick_stun") and tw.stun_timer > 0.0:
+								stunned = true
+								tw.stun_timer = 0.0
+								tw.modulate = Color.WHITE
+						ability_ok = ability_ok and stunned
+					elite_ok = elite_ok and ability_ok
 					elite_enemy.take_damage(999999)
-					elite_ok = RunStateData.instance.traits.size() > before_traits
+					elite_ok = elite_ok and RunStateData.instance.traits.size() > before_traits
 					if equip_mgr:
 						elite_ok = elite_ok and equip_mgr.inventory.size() > before_eq
 
