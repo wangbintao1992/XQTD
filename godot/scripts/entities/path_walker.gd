@@ -18,6 +18,8 @@ var pause: HitPause
 var rng := RandomNumberGenerator.new()
 var slow_factor := 1.0
 var slow_timer := 0.0
+var _in_river := false
+var _river_buff := 1.0
 
 
 var is_slowed: bool:
@@ -62,7 +64,18 @@ func _process(delta: float) -> void:
 		return
 
 	var mult := slow_factor if slow_timer > 0.0 else 1.0
-	dist += speed * mult * WeatherSystem.enemy_speed_mult() * delta
+	var terrain_mult := 1.0
+	var terrain = TerrainSystem.instance
+	if terrain and target:
+		var ttype := terrain.type_at(target.position)
+		terrain_mult = terrain.speed_mult_at(target.position)
+		if ttype == "river":
+			_in_river = true
+		elif _in_river:
+			_in_river = false
+			_river_buff = 1.15
+	var river_mult := 1.0 if _in_river else _river_buff
+	dist += speed * mult * WeatherSystem.enemy_speed_mult() * terrain_mult * river_mult * delta
 	var guard := 0
 	while guard < 64:
 		guard += 1
