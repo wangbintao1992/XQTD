@@ -84,6 +84,8 @@ var is_stunned: bool:
 
 
 func stun(seconds: float) -> void:
+	if seconds <= 0.0:
+		return
 	stun_timer = maxf(stun_timer, seconds)
 	modulate = Color(0.6, 0.6, 0.6)
 

@@ -72,6 +72,45 @@ func _ready() -> void:
 					if equip_mgr:
 						elite_ok = elite_ok and equip_mgr.inventory.size() > before_eq
 
+	# R7 确定性覆盖三种精英技能（wave 精英类型随机，不依赖它）
+	var ability_all_ok := true
+	var probe_towers := Node2D.new()
+	main.add_child(probe_towers)
+	var probe_near = preload("res://scenes/towers/tower_che.tscn").instantiate()
+	probe_near.auto_fire = false
+	probe_towers.add_child(probe_near)
+	var probe_far = preload("res://scenes/towers/tower_che.tscn").instantiate()
+	probe_far.auto_fire = false
+	probe_far.position = Vector2(400, 0)
+	probe_towers.add_child(probe_far)
+	var probe_graph = preload("res://scripts/core/path_graph.gd").new()
+	for type_name in ["ma", "che", "pao"]:
+		var probe_kind: Dictionary = {}
+		for kind in EnemyKinds.ELITES:
+			if str(kind.get("elite_type", "")) == type_name:
+				probe_kind = kind
+		var probe_enemy = preload("res://scenes/enemy.tscn").instantiate()
+		probe_enemy.setup(probe_kind, probe_graph, 0, 1, 0.0)
+		probe_enemy.towers_root = probe_towers
+		main.add_child(probe_enemy)
+		probe_enemy.position = Vector2.ZERO
+		probe_near.stun_timer = 0.0
+		probe_far.stun_timer = 0.0
+		probe_near.modulate = Color.WHITE
+		probe_far.modulate = Color.WHITE
+		probe_enemy._use_elite_ability()
+		if type_name == "ma":
+			ability_all_ok = ability_all_ok \
+				and probe_enemy.get_node("HitPause").immune \
+				and not probe_near.is_stunned and not probe_far.is_stunned
+		elif type_name == "che":
+			ability_all_ok = ability_all_ok and probe_near.is_stunned and not probe_far.is_stunned
+		else:
+			ability_all_ok = ability_all_ok and probe_far.is_stunned and not probe_near.is_stunned
+		probe_enemy.free()
+	probe_towers.free()
+	print("INTEGRATION elite_abilities=", ability_all_ok)
+
 	var expected_range: float = initial_range * 1.25 * MutationPool.tower_range_mult("che")
 	var pipeline_ok: bool = RunStateData.has("range_plus") \
 		and che != null and absf(che.attack_range - expected_range) < 0.5
@@ -213,5 +252,5 @@ func _ready() -> void:
 		and rs_ok and hud_ok and merge_ok and menu_ok and sell_ok \
 		and weather_ok and weather_buff_ok \
 		and picked[0] == 1 and over_ok and best_ok and reset_ok and best_kept \
-		and equipment_ok and panel_ok and equip_kept and terrain_ok
+		and equipment_ok and panel_ok and equip_kept and terrain_ok and ability_all_ok
 	get_tree().quit(0 if ok else 1)
