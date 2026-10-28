@@ -98,7 +98,9 @@ func _input(event: InputEvent) -> void:
 		else:
 			var merge_target = find_merge_target(target, _drag_kind)
 			if merge_target:
-				var cost := effective_cost()
+				var cost := _drag_cost
+				if RunStateData.has("free_place"):
+					cost = 0
 				if qi and not qi.can_afford(cost):
 					_show_toast("棋气不足，需要 %d" % cost)
 				elif merge_target.merge_one():
@@ -210,14 +212,18 @@ func find_merge_target(pos: Vector2, kind: String):
 	if kind == "" or towers_root == null:
 		return null
 	var screen := Coords.to_screen(pos)
+	var best = null
+	var best_d := 36.0
 	for t in towers_root.get_children():
 		if not is_instance_valid(t) or not t.has_method("merge_one"):
 			continue
 		if t.tower_kind != kind:
 			continue
-		if t.global_position.distance_to(screen) <= 36.0:
-			return t
-	return null
+		var d: float = t.global_position.distance_to(screen)
+		if d <= best_d:
+			best_d = d
+			best = t
+	return best
 
 
 func place(scene: PackedScene, pos: Vector2, cost: int = COST):

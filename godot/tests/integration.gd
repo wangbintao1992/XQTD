@@ -117,8 +117,10 @@ func _ready() -> void:
 	var weather_ok: bool = weather != null and weather.layers["rain"][0].visible
 	var weather_buff_ok := false
 	if weather:
+		var before_weather_range: float = che.attack_range if che else 0.0
 		weather.set_weather("snow")
-		weather_buff_ok = absf(WeatherSystem.tower_range_mult() - 0.9) < 0.001 \
+		weather_buff_ok = che != null \
+			and absf(che.attack_range - before_weather_range * 0.9) < 0.5 \
 			and hud != null and hud.weather_label.text.find("雪") >= 0
 	print("INTEGRATION weather=", weather_ok, " weather_buff=", weather_buff_ok)
 
@@ -144,18 +146,23 @@ func _ready() -> void:
 
 	rc.start_new_run()
 	await get_tree().process_frame
+	var weather_reset_ok: bool = WeatherSystem.instance != null \
+		and WeatherSystem.instance.current_weather == "rain" \
+		and hud != null and hud.weather_label.text == "天气：雨"
 	var reset_ok: bool = game_over != null and not game_over.visible \
 		and Qi.value == 100 and Lives.value == 20 \
 		and main.get_node("Towers").get_child_count() == 0 \
 		and RunStateData.instance != null and RunStateData.instance.traits.size() == 0 \
 		and RunStateData.instance.mutation == "" \
-		and hud != null and hud.mutation_label.text == "异变：—"
+		and hud != null and hud.mutation_label.text == "异变：—" \
+		and weather_reset_ok
 	var best_kept: bool = LeaderboardData.instance != null \
 		and LeaderboardData.instance.best_wave == final_wave \
 		and hud != null and hud.best_label.text == "最高波数 %d" % final_wave
 	print("INTEGRATION reset=", reset_ok, " best_kept=", best_kept)
 
 	var ok: bool = count > 0 and pipeline_ok and endless_ok and elite_ok and mutation_ok \
-		and rs_ok and hud_ok and menu_ok and sell_ok and weather_ok \
+		and rs_ok and hud_ok and merge_ok and menu_ok and sell_ok \
+		and weather_ok and weather_buff_ok \
 		and picked[0] == 1 and over_ok and best_ok and reset_ok and best_kept
 	get_tree().quit(0 if ok else 1)

@@ -10,7 +10,7 @@ signal unavailable(message: String)
 @export var tower_texture: Texture2D
 @export var cost := 50
 @export var display_name := "车"
-@export var tower_kind := "che"
+@export var tower_kind := ""
 @export var available := true
 
 

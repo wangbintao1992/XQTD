@@ -19,6 +19,8 @@ func run(t) -> void:
 	tower.auto_fire = false
 	tower.position = Vector2.ZERO
 	towers.add_child(tower)
+	if not tower.is_node_ready():
+		tower._ready()
 
 	# 单个目标：掉 2
 	var solo := _dummy(enemies, Vector2(100, 0))

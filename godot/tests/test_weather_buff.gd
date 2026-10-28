@@ -36,6 +36,14 @@ func run(t) -> void:
 		che._ready()
 	che.apply_traits()
 	t.approx(che.fire_interval, 1.2 * 0.95, 0.01, "tower reads weather interval")
+	t.approx(che.damage_exact, 1.0, 0.01, "rain does not change damage")
+
+	w.set_weather("fog")
+	che.apply_traits()
+	t.approx(che.damage_exact, 0.9, 0.001, "fog tower damage exact")
+	w.set_weather("storm")
+	che.apply_traits()
+	t.approx(che.damage_exact, 1.1, 0.001, "storm tower damage exact")
 
 	var g = preload("res://scripts/core/path_graph.gd").new()
 	var rng := RandomNumberGenerator.new()

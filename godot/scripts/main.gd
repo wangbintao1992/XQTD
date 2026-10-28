@@ -47,6 +47,7 @@ func _ready() -> void:
 	if RunStateData.instance:
 		RunStateData.instance.traits_changed.connect(_refresh_tower_traits)
 		RunStateData.instance.mutation_changed.connect(_refresh_tower_traits)
+	weather.weather_changed.connect(func(_w: String): _refresh_tower_traits())
 
 	hud.set_wave(wave.wave, 0 if wave.endless else wave.max_wave)
 	hud.set_progress(0.0)

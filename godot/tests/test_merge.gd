@@ -41,6 +41,7 @@ func run(t) -> void:
 	t.check(che.attack_range > base_range, "range up")
 	t.check(che.damage > base_damage, "damage up")
 	t.check(che.fire_interval < base_interval, "interval down")
+	t.approx(che.damage_exact, 1.5, 0.01, "level 2 exact damage")
 
 	# 异种不合成，照常放置
 	var pao = preload("res://scenes/towers/tower_pao.tscn").instantiate()
@@ -60,6 +61,7 @@ func run(t) -> void:
 	qi.earn(100)
 	che.level = 3
 	che.apply_traits()
+	t.approx(che.damage_exact, 2.0, 0.01, "level 3 exact damage")
 	var count := towers.get_child_count()
 	tp.begin_drag(che_scene, 50, tex, screen, "che")
 	var ev3 := InputEventMouseButton.new()

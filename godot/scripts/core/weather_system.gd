@@ -149,6 +149,8 @@ func apply_stage(stage: int) -> void:
 
 
 func set_weather(weather_name: String) -> void:
+	if weather_name == _current:
+		return
 	_current = weather_name
 	current_weather = weather_name
 	for key in layers:

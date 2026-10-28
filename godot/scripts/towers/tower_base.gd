@@ -11,6 +11,8 @@ signal clicked(tower: Node)
 var tower_cost := 50
 var tower_kind := ""
 var level := 1
+var damage_exact := 1.0
+var _damage_carry := 0.0
 var enemies_root: Node
 var towers_root: Node
 
@@ -72,6 +74,13 @@ func level_range_mult() -> float:
 
 func level_interval_mult() -> float:
 	return pow(0.9, level - 1)
+
+
+func roll_damage() -> int:
+	var total := damage_exact + _damage_carry
+	var applied := int(floor(total))
+	_damage_carry = total - float(applied)
+	return maxi(0, applied)
 
 
 func trait_damage_mult() -> float:
