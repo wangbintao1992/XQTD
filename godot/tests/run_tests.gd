@@ -35,6 +35,7 @@ const TEST_PATHS := [
 	"res://tests/test_equipment_stats.gd",
 	"res://tests/test_equipment_panel.gd",
 	"res://tests/test_terrain.gd",
+	"res://tests/test_elite_ability.gd",
 ]
 
 

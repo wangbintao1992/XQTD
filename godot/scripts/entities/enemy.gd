@@ -21,7 +21,10 @@ var kind: Dictionary = {}
 var max_hp := 1
 var hp := 1
 var life_cost := 1
+var elite_type := ""
+var towers_root: Node
 var walker: PathWalker
+var _ability_timer := 0.0
 
 var _body: Sprite2D
 var _overlay: Sprite2D
@@ -45,6 +48,8 @@ func setup(kind_: Dictionary, graph: PathGraph, edge: int, dir: int, speed: floa
 	max_hp = int(kind_.hp)
 	hp = max_hp
 	life_cost = int(kind_.life_cost)
+	elite_type = str(kind_.get("elite_type", ""))
+	_ability_timer = 3.0
 
 	_body = get_node_or_null("Body")
 	_overlay = get_node_or_null("DamageOverlay")
@@ -59,6 +64,47 @@ func setup(kind_: Dictionary, graph: PathGraph, edge: int, dir: int, speed: floa
 	if walker:
 		walker.setup(graph, edge, dir, speed, life_cost, self)
 		walker.reached_base.connect(_on_walker_reached_base)
+
+	var pause := get_node_or_null("HitPause") as HitPause
+	if pause and elite_type == "ma":
+		pause.immune = true
+
+
+func _process(delta: float) -> void:
+	if elite_type == "" or not is_inside_tree():
+		return
+	_ability_timer -= delta
+	if _ability_timer > 0.0:
+		return
+	_ability_timer = 5.0
+	_use_elite_ability()
+
+
+func _use_elite_ability() -> void:
+	if elite_type == "" or elite_type == "ma":
+		return
+	var towers: Array = []
+	if towers_root:
+		towers = towers_root.get_children()
+	elif is_inside_tree():
+		towers = get_tree().get_nodes_in_group("towers")
+	if towers.is_empty():
+		return
+
+	var best = null
+	var best_d := -1.0 if elite_type == "pao" else INF
+	for tower in towers:
+		if not is_instance_valid(tower):
+			continue
+		var d: float = global_position.distance_to(tower.global_position)
+		if elite_type == "che" and d < best_d:
+			best_d = d
+			best = tower
+		elif elite_type == "pao" and d > best_d:
+			best_d = d
+			best = tower
+	if best:
+		best.stun(1.5 if elite_type == "che" else 1.0)
 
 
 func apply_slow(factor: float, duration: float) -> void:

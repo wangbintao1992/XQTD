@@ -23,6 +23,7 @@ var run_spawned_total := 0
 var hp_mult := 1.0
 var speed_mult := 1.0
 var elite_kind: Dictionary = {}
+var towers_root: Node
 var _charm_timer := 0.0
 var spawn_timer := 0.0
 var _rng := RandomNumberGenerator.new()
@@ -98,6 +99,10 @@ func _slow_all() -> void:
 	for enemy in enemies_root.get_children():
 		if enemy.has_method("apply_slow"):
 			enemy.apply_slow(0.5, 2.0)
+
+
+func set_towers_root(root: Node) -> void:
+	towers_root = root
 
 
 func set_elite(kind: Dictionary) -> void:
@@ -199,6 +204,7 @@ func spawn_one() -> void:
 
 	var enemy = ENEMY_SCENE.instantiate()
 	enemy.setup(kind_copy, graph, edge, dir, walker_speed)
+	enemy.towers_root = towers_root
 	enemies_root.add_child(enemy)
 
 	if qi:

@@ -12,12 +12,14 @@ var tower_cost := 50
 var tower_kind := ""
 var level := 1
 var damage_exact := 1.0
+var stun_timer := 0.0
 var _damage_carry := 0.0
 var enemies_root: Node
 var towers_root: Node
 
 
 func _ready() -> void:
+	add_to_group("towers")
 	var body := get_node_or_null("Body") as Sprite2D
 	if body and body.texture:
 		var tex := body.texture
@@ -74,6 +76,25 @@ func level_range_mult() -> float:
 
 func level_interval_mult() -> float:
 	return pow(0.9, level - 1)
+
+
+var is_stunned: bool:
+	get:
+		return stun_timer > 0.0
+
+
+func stun(seconds: float) -> void:
+	stun_timer = maxf(stun_timer, seconds)
+	modulate = Color(0.6, 0.6, 0.6)
+
+
+func tick_stun(delta: float) -> bool:
+	if stun_timer <= 0.0:
+		return true
+	stun_timer = maxf(0.0, stun_timer - delta)
+	if stun_timer <= 0.0:
+		modulate = Color.WHITE
+	return stun_timer <= 0.0
 
 
 func roll_damage() -> int:

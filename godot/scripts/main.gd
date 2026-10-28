@@ -24,6 +24,7 @@ var graph: PathGraph
 func _ready() -> void:
 	graph = PathGraph.new()
 	spawner.setup(graph, enemies, Qi, Lives, GameSession)
+	spawner.set_towers_root(towers)
 	weather.setup(spawner, GameSession, Lives)
 	wave.setup(spawner, card_picker, GameSession, Lives)
 	wave.endless = true

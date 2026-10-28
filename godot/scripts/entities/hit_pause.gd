@@ -5,6 +5,7 @@ extends Node
 
 var pause_time := 0.12
 var remaining := 0.0
+var immune := false
 
 
 var is_paused: bool:
@@ -13,6 +14,8 @@ var is_paused: bool:
 
 
 func request_pause(seconds: float = -1.0) -> void:
+	if immune:
+		return
 	var t := pause_time if seconds < 0.0 else seconds
 	if t <= 0.0:
 		return

@@ -63,6 +63,7 @@ const ELITES := [
 		"life_cost": 8,
 		"qi_reward": 100,
 		"elite": true,
+		"elite_type": "ma",
 	},
 	{
 		"name": "elite_che",
@@ -72,6 +73,7 @@ const ELITES := [
 		"life_cost": 10,
 		"qi_reward": 150,
 		"elite": true,
+		"elite_type": "che",
 	},
 	{
 		"name": "elite_pao",
@@ -81,5 +83,6 @@ const ELITES := [
 		"life_cost": 8,
 		"qi_reward": 120,
 		"elite": true,
+		"elite_type": "pao",
 	},
 ]

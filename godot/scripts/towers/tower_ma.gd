@@ -40,6 +40,8 @@ func apply_traits() -> void:
 
 
 func _process(delta: float) -> void:
+	if not tick_stun(delta):
+		return
 	if not auto_fire:
 		return
 	if _winding:
