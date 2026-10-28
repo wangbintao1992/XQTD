@@ -16,6 +16,7 @@ extends Node2D
 @onready var action_menu: TowerActionMenu = $TowerActionMenu
 @onready var tower_detail: TowerDetail = $TowerDetail
 @onready var weather: WeatherSystem = $Weather
+@onready var combo: ComboSystem = $ComboSystem
 
 var graph: PathGraph
 
@@ -27,6 +28,7 @@ func _ready() -> void:
 	wave.setup(spawner, card_picker, GameSession, Lives)
 	wave.endless = true
 	placement.setup(graph, towers, enemies, Qi)
+	combo.setup(towers, enemies)
 	action_menu.detail = tower_detail
 	placement.tower_placed.connect(func(tower: Node):
 		tower.clicked.connect(func(t: Node): action_menu.show_for(t))
