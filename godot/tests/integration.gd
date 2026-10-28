@@ -131,6 +131,26 @@ func _ready() -> void:
 		card_picker._process(0.5)
 	print("INTEGRATION picker=", picked[0] == 1)
 
+	var equipment_ok := false
+	var panel_ok := false
+	var equipped_slot := ""
+	var equip_mgr = EquipmentManagerData.instance
+	if equip_mgr:
+		equip_mgr.persistence_enabled = false
+		equip_mgr.reset_for_test()
+		var item: Dictionary = equip_mgr.add_random_drop()
+		equipment_ok = equip_mgr.inventory.size() == 1
+		if equipment_ok:
+			equipped_slot = item.slot
+			equip_mgr.equip(0)
+			equipment_ok = not equip_mgr.equipped[equipped_slot].is_empty()
+	var equip_panel = main.get_node_or_null("EquipmentPanel")
+	if equip_panel:
+		equip_panel.show_panel()
+		panel_ok = equip_panel.is_open
+		equip_panel.hide_panel()
+	print("INTEGRATION equipment=", equipment_ok, " panel=", panel_ok)
+
 	var final_wave: int = RunStateData.instance.wave
 	Lives.lose(100)
 	await get_tree().process_frame
@@ -159,10 +179,13 @@ func _ready() -> void:
 	var best_kept: bool = LeaderboardData.instance != null \
 		and LeaderboardData.instance.best_wave == final_wave \
 		and hud != null and hud.best_label.text == "最高波数 %d" % final_wave
-	print("INTEGRATION reset=", reset_ok, " best_kept=", best_kept)
+	var equip_kept: bool = equip_mgr != null and equipped_slot != "" \
+		and not equip_mgr.equipped[equipped_slot].is_empty()
+	print("INTEGRATION reset=", reset_ok, " best_kept=", best_kept, " equip_kept=", equip_kept)
 
 	var ok: bool = count > 0 and pipeline_ok and endless_ok and elite_ok and mutation_ok \
 		and rs_ok and hud_ok and merge_ok and menu_ok and sell_ok \
 		and weather_ok and weather_buff_ok \
-		and picked[0] == 1 and over_ok and best_ok and reset_ok and best_kept
+		and picked[0] == 1 and over_ok and best_ok and reset_ok and best_kept \
+		and equipment_ok and panel_ok and equip_kept
 	get_tree().quit(0 if ok else 1)

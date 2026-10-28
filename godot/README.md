@@ -66,7 +66,14 @@ godot --headless --path godot --fixed-fps 60 res://tests/integration.tscn
 
 - 局内合成：同种棋子叠放升级（Lv1-3），伤害/射程提升、攻速略升，消耗 50 棋气。
 - 天气 Buff：雨（塔攻速+、敌速-）、雪（塔射程-、敌速-）、雾（塔伤害-）、雷暴（塔伤害+、敌速+）；HUD 显示天气。
-- 待做 R5：装备 / 器具跨局、地形 / 过河卒、精英特殊攻击、真实后端排行榜。
+- R5 已实现：装备跨局养成。
+
+## 肉鸽无尽 R5
+
+- 装备：3 槽（头盔 / 兵器 / 护甲）、5 品质（白绿蓝紫橙）、1-3 条随机词条（伤害 / 射程 / 攻速 / 棋气消耗）。
+- 精英掉落；穿新覆盖旧、不可脱下；属性跨局生效。
+- 按 E 打开装备面板；本地存档 `user://equipment.json`。
+- 待做：地形 / 过河卒、精英特殊攻击、真实后端排行榜。
 
 ## 仍缺（M3）
 
@@ -83,11 +90,11 @@ godot/
 ├── art/            从 assets/resources/textures 复制的原美术
 ├── scenes/         main / enemy / towers / ui
 ├── scripts/
-│   ├── autoload/   GameSession / Qi / Lives / Log / Toast / RunState / Leaderboard
+│   ├── autoload/   GameSession / Qi / Lives / Log / Toast / RunState / Leaderboard / Equipment
 │   ├── core/       PathGraph / PathSpawner / WaveManager / RunController / WeatherSystem / ComboSystem
 │   ├── entities/   Enemy / PathWalker / HitPause
 │   ├── towers/     TowerBase / TowerChe / TowerPao / TowerMa / TowerPlacement
-│   ├── ui/         Hud / Sidebar / TowerCard / CardPicker / TowerActionMenu / TowerDetail / HomeMenu / GameOver
+│   ├── ui/         Hud / Sidebar / TowerCard / CardPicker / TowerActionMenu / TowerDetail / EquipmentPanel / HomeMenu / GameOver
 │   ├── data/       path_graph_data.gd（生成物）/ enemy_kinds.gd / trait_pool.gd
 │   └── util/       Coords / UiFont
 ├── tests/          run_tests.gd + test_*.gd + integration.tscn

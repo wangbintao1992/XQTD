@@ -19,6 +19,7 @@ var tower_detail: TowerDetail
 var weather: WeatherSystem
 var combo: ComboSystem
 var leaderboard: Object
+var equipment_panel: EquipmentPanel
 
 
 func _ready() -> void:
@@ -42,6 +43,7 @@ func _ready() -> void:
 		tower_detail = main.get_node_or_null("TowerDetail") as TowerDetail
 		weather = main.get_node_or_null("Weather") as WeatherSystem
 		combo = main.get_node_or_null("ComboSystem") as ComboSystem
+		equipment_panel = main.get_node_or_null("EquipmentPanel") as EquipmentPanel
 	leaderboard = get_node_or_null("/root/Leaderboard")
 
 	if home:
@@ -78,6 +80,8 @@ func reset_run() -> void:
 		weather.reset()
 	if combo:
 		combo.reset()
+	if equipment_panel:
+		equipment_panel.hide_panel()
 	if enemies:
 		for child in enemies.get_children():
 			enemies.remove_child(child)

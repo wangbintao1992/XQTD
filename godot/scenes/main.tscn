@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Texture2D" path="res://art/bg.png" id="2"]
@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/tower_detail.tscn" id="14"]
 [ext_resource type="Script" path="res://scripts/core/weather_system.gd" id="15"]
 [ext_resource type="Script" path="res://scripts/core/combo_system.gd" id="16"]
+[ext_resource type="PackedScene" path="res://scenes/ui/equipment_panel.tscn" id="17"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1")
@@ -58,6 +59,8 @@ script = ExtResource("16")
 [node name="TowerActionMenu" parent="." instance=ExtResource("13")]
 
 [node name="TowerDetail" parent="." instance=ExtResource("14")]
+
+[node name="EquipmentPanel" parent="." instance=ExtResource("17")]
 
 [node name="HomeMenu" parent="." instance=ExtResource("9")]
 

@@ -17,6 +17,7 @@ extends Node2D
 @onready var tower_detail: TowerDetail = $TowerDetail
 @onready var weather: WeatherSystem = $Weather
 @onready var combo: ComboSystem = $ComboSystem
+@onready var equipment_panel: EquipmentPanel = $EquipmentPanel
 
 var graph: PathGraph
 
