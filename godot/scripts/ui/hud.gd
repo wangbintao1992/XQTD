@@ -78,8 +78,11 @@ func set_wave(w: int, max_wave: int) -> void:
 
 
 func _process(delta: float) -> void:
-	_display_progress += (_target_progress - _display_progress) \
-		* minf(1.0, BAR_SMOOTH_SPEED * delta)
+	var diff := _target_progress - _display_progress
+	if absf(diff) < 0.0005:
+		_display_progress = _target_progress
+	else:
+		_display_progress += diff * minf(1.0, BAR_SMOOTH_SPEED * delta)
 	var bar := _bar()
 	if bar:
 		bar.value = _display_progress * 100.0

@@ -40,12 +40,15 @@ static func set_enabled(value: bool) -> void:
 static func apply(node: CanvasItem) -> ShaderMaterial:
 	if node == null:
 		return null
+	_track(node)
 	if not multiply_enabled:
 		node.material = null
 		return null
 	node.material = material()
-	node.set_meta("ink_fx", true)
+	return material()
+
+
+static func _track(node: CanvasItem) -> void:
 	_applied.append(weakref(node))
 	if _applied.size() > 256:
 		_applied = _applied.filter(func(ref): return ref.get_ref() != null)
-	return material()

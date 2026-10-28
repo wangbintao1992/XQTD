@@ -15,6 +15,7 @@ func _ready() -> void:
 	var leaderboard = LeaderboardData.instance
 	if leaderboard:
 		leaderboard.reset_for_test()
+	InkFx.set_enabled(true)
 
 	var rc = main.get_node_or_null("RunController")
 	if rc == null:

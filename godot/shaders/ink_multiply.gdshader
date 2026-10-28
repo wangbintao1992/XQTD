@@ -6,7 +6,8 @@ render_mode blend_mul;
 // 先把 alpha 预乘回 RGB：src.rgb' = mix(1, src.rgb, src.a)，alpha 设为 1。
 // 透明区 → 乘 1（不改背景）；不透明墨色 → 正常正片叠底；modulate.a 淡出也有效。
 void fragment() {
-	vec4 c = texture(TEXTURE, UV) * COLOR;
+	// canvas_item 的 fragment COLOR 已经是 TEXTURE * 顶点/调制色，不能再采样一次
+	vec4 c = COLOR;
 	float a = c.a;
 	c.rgb = mix(vec3(1.0), c.rgb, a);
 	c.a = 1.0;
