@@ -103,12 +103,13 @@ XQTD_LEADERBOARD_URL=http://127.0.0.1:8080 \
 - 起后端：`cd server && ./mvnw spring-boot:run`；详见 `server/README.md`。
 - 已知限制：客户端上报波数，服务端未复算 BattleReport，存在伪造空间。
 
-## 仍缺（M3）
+## M3 打磨（进行中）
 
-- 墨刃正片叠底着色器、光刃贴图 + 对象池、聚墨前摇视觉。
-- 与 Cocos 版逐项布局对照（标题条、印章、Stage、牌面等）。
-- 字体子集（无 CJK 系统字体的机器需要内嵌）。
-- 性能压测、进度条平滑/单调、`draw_network` 调试红线。
+- 波次条按 Cocos `bg.scene` 对齐：厚 7、轨道 `#3C3834`、填充 `#B23A2C`、`barSmoothSpeed=5` 平滑。
+- Stage / WaveText / RoundTip 位置按原场景 y 对齐。
+- 墨刃正片叠底：`InkFx` 统一 `CanvasItemMaterial.BLEND_MODE_MUL`，可一键回退 alpha；已接车/马/炮/组合技/墨点。
+- 车攻击线固定 4 条复用，不再每次开火 `new Line2D`。
+- 仍缺：标题卷轴/印章按截图对齐、天气粒子手感、500 敌人 60fps 压测、字体子集、`draw_network` 调试红线。
 - 真无尽已开启（波次无限）；每 10 波异变 / 每 5 波精英已在 R2 接入。
 
 ## 目录

@@ -145,6 +145,17 @@ func _ready() -> void:
 		and hud != null and hud.mutation_label.text != "异变：—"
 	print("INTEGRATION hud_traits=", hud_ok, " mutation=", mutation_ok)
 
+	var wave_bar = hud.get_node_or_null("Root/ProgressBar") if hud else null
+	var hud_style_ok := false
+	if wave_bar:
+		var fill_style = wave_bar.get_theme_stylebox("fill")
+		hud_style_ok = wave_bar.size.y == 7.0 and fill_style is StyleBoxFlat \
+			and absf(fill_style.bg_color.r - 178.0 / 255.0) < 0.001
+	var ink_ok: bool = InkFx.multiply_enabled and che != null \
+		and che._flash_lines.size() == 4 \
+		and che._flash_lines[0].material is CanvasItemMaterial
+	print("INTEGRATION hud_style=", hud_style_ok, " ink=", ink_ok)
+
 	var pao = placement.place(load("res://scenes/towers/tower_pao.tscn"), spot) if spot != null else null
 	var ma = placement.place(load("res://scenes/towers/tower_ma.tscn"), spot) if spot != null else null
 	print("INTEGRATION all_towers=", che != null and pao != null and ma != null)
@@ -272,5 +283,5 @@ func _ready() -> void:
 		and weather_ok and weather_buff_ok \
 		and picked[0] == 1 and over_ok and best_ok and reset_ok and best_kept \
 		and equipment_ok and panel_ok and equip_kept and terrain_ok and ability_all_ok \
-		and leaderboard_panel_ok and leaderboard_reset_ok
+		and leaderboard_panel_ok and leaderboard_reset_ok and hud_style_ok and ink_ok
 	get_tree().quit(0 if ok else 1)
