@@ -97,7 +97,8 @@ func _ready() -> void:
 
 	var terrain = main.get_node_or_null("Terrain")
 	var terrain_ok: bool = terrain != null \
-		and terrain.type_at(Coords.to_screen(Vector2(-200, 203))) == "river"
+		and terrain.type_at(Coords.to_screen(Vector2(-200, 203) * Coords.PATH_IMAGE_SCALE)) == "river" \
+		and terrain.get_child_count() >= TerrainSystem.ZONES.size() * 2
 	print("INTEGRATION terrain=", terrain_ok)
 
 	var combo = main.get_node_or_null("ComboSystem")

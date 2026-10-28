@@ -47,20 +47,22 @@ func _ready() -> void:
 	_build_visuals()
 
 
-func type_at(stage_pos: Vector2) -> String:
+func zone_at(stage_pos: Vector2) -> Dictionary:
 	for zone in ZONES:
-		var center: Vector2 = Coords.to_screen(zone.center)
+		var center: Vector2 = Coords.to_screen(zone.center * Coords.PATH_IMAGE_SCALE)
 		if stage_pos.distance_to(center) <= float(zone.radius):
-			return str(zone.type)
-	return ""
+			return zone
+	return {}
+
+
+func type_at(stage_pos: Vector2) -> String:
+	var zone := zone_at(stage_pos)
+	return str(zone.get("type", ""))
 
 
 func speed_mult_at(stage_pos: Vector2) -> float:
-	for zone in ZONES:
-		var center: Vector2 = Coords.to_screen(zone.center)
-		if stage_pos.distance_to(center) <= float(zone.radius):
-			return float(zone.speed)
-	return 1.0
+	var zone := zone_at(stage_pos)
+	return float(zone.get("speed", 1.0))
 
 
 func _build_visuals() -> void:
@@ -73,13 +75,12 @@ func _build_visuals() -> void:
 		var poly := Polygon2D.new()
 		poly.polygon = pts
 		poly.color = zone.color
-		poly.position = Coords.to_screen(zone.center)
-		poly.z_index = 0
+		poly.position = Coords.to_screen(zone.center * Coords.PATH_IMAGE_SCALE)
 		add_child(poly)
 
 		var label := Label.new()
 		label.text = str(zone.name)
-		label.position = Coords.to_screen(zone.center) + Vector2(-10, -14)
+		label.position = Coords.to_screen(zone.center * Coords.PATH_IMAGE_SCALE) + Vector2(-10, -14)
 		label.add_theme_font_override("font", UiFont.make())
 		label.add_theme_font_size_override("font_size", 20)
 		label.add_theme_color_override("font_color", Color(0.15, 0.12, 0.1))

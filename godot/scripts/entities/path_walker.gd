@@ -5,7 +5,7 @@ extends Node
 
 signal reached_base(life_cost: int)
 
-const PATH_IMAGE_SCALE := 0.8
+const RIVER_BUFF := 1.15
 
 var graph: PathGraph
 var edge := 0
@@ -72,8 +72,9 @@ func _process(delta: float) -> void:
 		if ttype == "river":
 			_in_river = true
 		elif _in_river:
+			# 过河卒：离开河后永久加速；再次进河时挂起，出河后恢复
 			_in_river = false
-			_river_buff = 1.15
+			_river_buff = RIVER_BUFF
 	var river_mult := 1.0 if _in_river else _river_buff
 	dist += speed * mult * WeatherSystem.enemy_speed_mult() * terrain_mult * river_mult * delta
 	var guard := 0
@@ -104,5 +105,5 @@ func _process(delta: float) -> void:
 func _apply_position() -> void:
 	if graph == null or target == null:
 		return
-	var p: Vector2 = graph.pos_on_edge(edge, dir, dist) * PATH_IMAGE_SCALE
+	var p: Vector2 = graph.pos_on_edge(edge, dir, dist) * Coords.PATH_IMAGE_SCALE
 	target.position = Coords.to_screen(p)

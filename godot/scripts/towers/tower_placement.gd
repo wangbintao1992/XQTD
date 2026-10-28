@@ -13,7 +13,6 @@ const MIN_PATH_DIST := 22.0
 const MAX_SNAP := 200.0
 const COST := 50
 const TOWER_SIZE := 62.0
-const PATH_IMAGE_SCALE := 0.8
 
 var graph: PathGraph
 var towers_root: Node
@@ -206,8 +205,8 @@ func is_too_close_to_path(pos: Vector2) -> bool:
 	for e in graph.edges:
 		var pts: Array = e.points
 		for i in range(pts.size() - 1):
-			var a: Vector2 = pts[i] * PATH_IMAGE_SCALE
-			var b: Vector2 = pts[i + 1] * PATH_IMAGE_SCALE
+			var a: Vector2 = pts[i] * Coords.PATH_IMAGE_SCALE
+			var b: Vector2 = pts[i + 1] * Coords.PATH_IMAGE_SCALE
 			if _dist_to_segment(pos, a, b) < MIN_PATH_DIST:
 				return true
 	return false

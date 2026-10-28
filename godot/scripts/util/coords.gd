@@ -4,6 +4,7 @@ extends RefCounted
 ## Cocos 设计坐标（原点在画布中心、y 向上）↔ Godot 屏幕坐标（原点左上、y 向下）。
 
 const DESIGN := Vector2(1280, 720)
+const PATH_IMAGE_SCALE := 0.8
 
 
 static func to_screen(p: Vector2) -> Vector2:
