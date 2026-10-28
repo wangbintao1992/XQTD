@@ -61,6 +61,11 @@ func setup(kind_: Dictionary, graph: PathGraph, edge: int, dir: int, speed: floa
 		walker.reached_base.connect(_on_walker_reached_base)
 
 
+func apply_slow(factor: float, duration: float) -> void:
+	if walker:
+		walker.apply_slow(factor, duration)
+
+
 func take_damage(amount: int) -> void:
 	if hp <= 0:
 		return

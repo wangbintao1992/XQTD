@@ -26,6 +26,7 @@ const TEST_PATHS := [
 	"res://tests/test_traits_effects.gd",
 	"res://tests/test_mutation.gd",
 	"res://tests/test_elite.gd",
+	"res://tests/test_r2_traits.gd",
 ]
 
 

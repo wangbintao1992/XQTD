@@ -24,6 +24,7 @@ var run_spawned_total := 0
 var hp_mult := 1.0
 var speed_mult := 1.0
 var elite_kind: Dictionary = {}
+var _charm_timer := 0.0
 var spawn_timer := 0.0
 var _rng := RandomNumberGenerator.new()
 
@@ -73,6 +74,30 @@ func reset_run_counter() -> void:
 
 func total_count() -> int:
 	return spawned_count
+
+
+func _tick_meiren(delta: float) -> void:
+	if not RunStateData.has("meiren") or enemies_root == null:
+		return
+	_charm_timer -= delta
+	if _charm_timer > 0.0:
+		return
+	_charm_timer = 6.0
+	var list = enemies_root.get_children()
+	if list.is_empty():
+		return
+	var target = list[_rng.randi_range(0, list.size() - 1)]
+	var pause = target.get_node_or_null("HitPause")
+	if pause:
+		pause.request_pause(1.5)
+
+
+func _slow_all() -> void:
+	if not RunStateData.has("slow_on_kill") or enemies_root == null:
+		return
+	for enemy in enemies_root.get_children():
+		if enemy.has_method("apply_slow"):
+			enemy.apply_slow(0.5, 2.0)
 
 
 func set_elite(kind: Dictionary) -> void:
@@ -126,6 +151,7 @@ func _process(delta: float) -> void:
 		return
 	if lives and lives.is_game_over:
 		return
+	_tick_meiren(delta)
 	if spawned_count >= enemy_count:
 		return
 
@@ -168,6 +194,8 @@ func spawn_one() -> void:
 			qi.earn(reward_for(int(k.qi_reward)))
 			if bool(k.get("elite", false)):
 				grant_elite_reward(k)
+			if RunStateData.has("slow_on_kill"):
+				_slow_all()
 		)
 	if lives:
 		enemy.reached_base.connect(func(cost: int): lives.lose(cost))

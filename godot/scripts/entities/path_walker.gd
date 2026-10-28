@@ -16,6 +16,13 @@ var life_cost := 1
 var target: Node2D
 var pause: HitPause
 var rng := RandomNumberGenerator.new()
+var slow_factor := 1.0
+var slow_timer := 0.0
+
+
+var is_slowed: bool:
+	get:
+		return slow_timer > 0.0
 
 
 func setup(
@@ -39,13 +46,23 @@ func setup(
 	_apply_position()
 
 
+func apply_slow(factor: float, duration: float) -> void:
+	slow_factor = clampf(factor, 0.1, 1.0)
+	slow_timer = maxf(slow_timer, duration)
+
+
 func _process(delta: float) -> void:
 	if graph == null:
 		return
+	if slow_timer > 0.0:
+		slow_timer = maxf(0.0, slow_timer - delta)
+		if slow_timer <= 0.0:
+			slow_factor = 1.0
 	if pause and pause.is_paused:
 		return
 
-	dist += speed * delta
+	var mult := slow_factor if slow_timer > 0.0 else 1.0
+	dist += speed * mult * delta
 	var guard := 0
 	while guard < 64:
 		guard += 1
