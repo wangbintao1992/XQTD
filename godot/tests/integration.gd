@@ -95,6 +95,11 @@ func _ready() -> void:
 	var ma = placement.place(load("res://scenes/towers/tower_ma.tscn"), spot) if spot != null else null
 	print("INTEGRATION all_towers=", che != null and pao != null and ma != null)
 
+	var terrain = main.get_node_or_null("Terrain")
+	var terrain_ok: bool = terrain != null \
+		and terrain.type_at(Coords.to_screen(Vector2(-200, 203))) == "river"
+	print("INTEGRATION terrain=", terrain_ok)
+
 	var combo = main.get_node_or_null("ComboSystem")
 	var combo_ok := false
 	if combo and combo.check_combos().has("ma_pao"):
@@ -196,5 +201,5 @@ func _ready() -> void:
 		and rs_ok and hud_ok and merge_ok and menu_ok and sell_ok \
 		and weather_ok and weather_buff_ok \
 		and picked[0] == 1 and over_ok and best_ok and reset_ok and best_kept \
-		and equipment_ok and panel_ok and equip_kept
+		and equipment_ok and panel_ok and equip_kept and terrain_ok
 	get_tree().quit(0 if ok else 1)

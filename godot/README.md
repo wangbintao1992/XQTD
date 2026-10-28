@@ -75,6 +75,12 @@ godot --headless --path godot --fixed-fps 60 res://tests/integration.tscn
 - 按 E 打开装备面板；本地存档 `user://equipment.json`。
 - 待做：地形 / 过河卒、精英特殊攻击、真实后端排行榜。
 
+## 肉鸽无尽 R6
+
+- 路径地形：河（敌速 ×0.8，过河后 ×1.15「过河卒」）、山（×0.7）、桥（×1.1）。
+- 地形以水墨圆区 + 标签叠在路径上，只影响敌人移动。
+- 待做 R7：精英特殊攻击、真实后端排行榜、M3 水墨视觉/布局/性能。
+
 ## 仍缺（M3）
 
 - 墨刃正片叠底着色器、光刃贴图 + 对象池、聚墨前摇视觉。
@@ -91,7 +97,7 @@ godot/
 ├── scenes/         main / enemy / towers / ui
 ├── scripts/
 │   ├── autoload/   GameSession / Qi / Lives / Log / Toast / RunState / Leaderboard / Equipment
-│   ├── core/       PathGraph / PathSpawner / WaveManager / RunController / WeatherSystem / ComboSystem
+│   ├── core/       PathGraph / PathSpawner / WaveManager / RunController / WeatherSystem / ComboSystem / TerrainSystem
 │   ├── entities/   Enemy / PathWalker / HitPause
 │   ├── towers/     TowerBase / TowerChe / TowerPao / TowerMa / TowerPlacement
 │   ├── ui/         Hud / Sidebar / TowerCard / CardPicker / TowerActionMenu / TowerDetail / EquipmentPanel / HomeMenu / GameOver
