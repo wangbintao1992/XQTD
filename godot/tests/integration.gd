@@ -32,8 +32,9 @@ func _ready() -> void:
 	var initial_range: float = che.attack_range if che else 0.0
 	print("INTEGRATION towers=", che != null)
 
-	# 真实选词条链路：清波 → 选卡 → 下一波，连续 5 次
-	for i in 5:
+	# 真实选词条链路：清波 → 选卡 → 下一波，连续 9 次到第 10 波
+	var elite_seen := false
+	for i in 9:
 		spawner.debug_finish_wave()
 		wave._process(0.0)
 		if card_picker.is_picking:
@@ -42,18 +43,24 @@ func _ready() -> void:
 			card_picker.pick(0)
 			card_picker._process(0.5)
 		wave._process(3.1)
+		if wave.wave == 5 and spawner.elite_kind.size() > 0:
+			elite_seen = true
 
 	var pipeline_ok: bool = RunStateData.has("range_plus") \
 		and che != null and absf(che.attack_range - initial_range * 1.25) < 0.5
-	var endless_ok: bool = wave != null and wave.wave >= 6
-	print("INTEGRATION pipeline=", pipeline_ok, " endless=", endless_ok, " wave=", wave.wave)
+	var endless_ok: bool = wave != null and wave.wave >= 10
+	var elite_ok: bool = elite_seen
+	print("INTEGRATION pipeline=", pipeline_ok, " endless=", endless_ok, " wave=", wave.wave, " elite=", elite_ok)
 
 	var rs_ok: bool = RunStateData.instance != null and RunStateData.has("range_plus")
 	print("INTEGRATION traits=", rs_ok)
 
 	var hud = main.get_node_or_null("HUD")
 	var hud_ok: bool = hud != null and hud.trait_label.text.find(TraitPool.title("range_plus")) >= 0
-	print("INTEGRATION hud_traits=", hud_ok)
+	var mutation_ok: bool = RunStateData.instance != null \
+		and RunStateData.instance.mutation != "" \
+		and hud != null and hud.mutation_label.text != "异变：—"
+	print("INTEGRATION hud_traits=", hud_ok, " mutation=", mutation_ok)
 
 	var pao = placement.place(load("res://scenes/towers/tower_pao.tscn"), spot) if spot != null else null
 	var ma = placement.place(load("res://scenes/towers/tower_ma.tscn"), spot) if spot != null else null
@@ -99,6 +106,7 @@ func _ready() -> void:
 		and RunStateData.instance != null and RunStateData.instance.traits.size() == 0
 	print("INTEGRATION reset=", reset_ok)
 
-	var ok: bool = count > 0 and pipeline_ok and endless_ok and rs_ok and hud_ok \
-		and menu_ok and sell_ok and weather_ok and picked[0] == 1 and over_ok and reset_ok
+	var ok: bool = count > 0 and pipeline_ok and endless_ok and elite_ok and mutation_ok \
+		and rs_ok and hud_ok and menu_ok and sell_ok and weather_ok \
+		and picked[0] == 1 and over_ok and reset_ok
 	get_tree().quit(0 if ok else 1)
