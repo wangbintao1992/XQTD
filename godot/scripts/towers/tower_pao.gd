@@ -33,6 +33,7 @@ var _winding := false
 
 
 func _ready() -> void:
+	tower_kind = "pao"
 	base_damage = damage
 	base_range = attack_range
 	base_interval = fire_interval
@@ -42,9 +43,9 @@ func _ready() -> void:
 
 
 func apply_traits() -> void:
-	damage = maxi(1, int(round(float(base_damage) * trait_damage_mult())))
-	attack_range = base_range * trait_range_mult()
-	fire_interval = base_interval * trait_interval_mult()
+	damage = maxi(1, int(round(float(base_damage) * trait_damage_mult() * mutation_damage_mult())))
+	attack_range = base_range * trait_range_mult() * mutation_range_mult()
+	fire_interval = base_interval * trait_interval_mult() * mutation_interval_mult()
 
 
 func _process(delta: float) -> void:

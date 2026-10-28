@@ -5,10 +5,12 @@ extends Node
 ## 作为 Autoload 名 `RunState` 挂到 /root；测试里直接 new()。
 
 signal traits_changed
+signal mutation_changed
 
 static var instance: RunStateData
 
 var traits: Array[String] = []
+var mutation := ""
 var wave := 1
 
 
@@ -23,8 +25,10 @@ func _exit_tree() -> void:
 
 func reset() -> void:
 	traits.clear()
+	mutation = ""
 	wave = 1
 	traits_changed.emit()
+	mutation_changed.emit()
 
 
 func add_trait(id: String) -> bool:
@@ -39,6 +43,13 @@ func add_trait(id: String) -> bool:
 
 func has_trait(id: String) -> bool:
 	return traits.has(id)
+
+
+func set_mutation(id: String) -> void:
+	if mutation == id:
+		return
+	mutation = id
+	mutation_changed.emit()
 
 
 static func has(id: String) -> bool:

@@ -9,11 +9,12 @@ extends CanvasLayer
 @onready var tip_label: Label = $Root/RoundTip
 @onready var progress: ProgressBar = $Root/ProgressBar
 @onready var trait_label: Label = $Root/TraitLabel
+@onready var mutation_label: Label = $Root/MutationLabel
 
 
 func _ready() -> void:
 	var font := UiFont.make()
-	for label in [qi_label, lives_label, wave_label, tip_label, trait_label]:
+	for label in [qi_label, lives_label, wave_label, tip_label, trait_label, mutation_label]:
 		label.add_theme_font_override("font", font)
 
 	set_qi(100)
@@ -24,9 +25,12 @@ func _ready() -> void:
 
 	if RunStateData.instance:
 		RunStateData.instance.traits_changed.connect(_refresh_traits)
+		RunStateData.instance.mutation_changed.connect(_refresh_mutation)
 		_refresh_traits()
+		_refresh_mutation()
 	else:
 		set_traits([])
+		set_mutation("")
 
 	var qi = get_node_or_null("/root/Qi")
 	if qi:
@@ -75,3 +79,14 @@ func set_traits(traits: Array) -> void:
 	for id in traits:
 		lines.append("· " + TraitPool.title(str(id)))
 	trait_label.text = "\n".join(lines)
+
+
+func _refresh_mutation() -> void:
+	set_mutation(RunStateData.instance.mutation if RunStateData.instance else "")
+
+
+func set_mutation(id: String) -> void:
+	if id == "":
+		mutation_label.text = "异变：—"
+		return
+	mutation_label.text = "异变：" + MutationPool.title(id) + "\n" + MutationPool.desc(id)

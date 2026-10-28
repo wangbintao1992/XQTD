@@ -75,9 +75,15 @@ func _apply_wave_scaling() -> void:
 	if spawner == null:
 		return
 	if endless:
+		if wave % 10 == 0:
+			if RunStateData.instance:
+				RunStateData.instance.set_mutation(MutationPool.pick())
+				var toast = get_node_or_null("/root/Toast")
+				if toast:
+					toast.show("棋局异变：" + MutationPool.title(RunStateData.instance.mutation))
 		spawner.enemy_count = maxi(1, int(round(float(base_round) * pow(count_growth, wave - 1))))
-		spawner.hp_mult = pow(hp_growth, wave - 1)
-		spawner.speed_mult = pow(speed_growth, floor((wave - 1) / 5.0))
+		spawner.hp_mult = pow(hp_growth, wave - 1) * MutationPool.enemy_hp_mult()
+		spawner.speed_mult = pow(speed_growth, floor((wave - 1) / 5.0)) * MutationPool.enemy_speed_mult()
 	else:
 		spawner.enemy_count = enemies_per_round
 

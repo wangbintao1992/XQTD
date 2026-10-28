@@ -8,6 +8,7 @@ const TOWER_SIZE := 62.0
 signal clicked(tower: Node)
 
 var tower_cost := 50
+var tower_kind := ""
 var enemies_root: Node
 var towers_root: Node
 
@@ -58,6 +59,18 @@ func trait_range_mult() -> float:
 
 func trait_interval_mult() -> float:
 	return 0.75 if RunStateData.has("cooldown_halve") else 1.0
+
+
+func mutation_damage_mult() -> float:
+	return MutationPool.tower_damage_mult(tower_kind)
+
+
+func mutation_range_mult() -> float:
+	return MutationPool.tower_range_mult(tower_kind)
+
+
+func mutation_interval_mult() -> float:
+	return MutationPool.tower_interval_mult(tower_kind)
 
 
 func spread_hit(source: Node, amount: int) -> void:
