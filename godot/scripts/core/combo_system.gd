@@ -207,6 +207,7 @@ func _flash(vertical: bool, coord: float) -> void:
 		line.points = PackedVector2Array([Vector2(coord, 0), Vector2(coord, Coords.DESIGN.y)])
 	else:
 		line.points = PackedVector2Array([Vector2(0, coord), Vector2(Coords.DESIGN.x, coord)])
+	InkFx.apply(line)
 	add_child(line)
 	var tw := create_tween()
 	tw.tween_property(line, "modulate:a", 0.0, 0.35)

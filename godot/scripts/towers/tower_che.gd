@@ -26,6 +26,7 @@ var base_range := 460.0
 var base_interval := 1.2
 var _windup := 0.0
 var _winding := false
+var _flash_lines: Array[Line2D] = []
 
 
 func _ready() -> void:
@@ -36,6 +37,7 @@ func _ready() -> void:
 	super._ready()
 	apply_traits()
 	_timer = fire_interval * 0.5
+	_build_flash_lines()
 
 
 func apply_traits() -> void:
@@ -110,18 +112,34 @@ func _raycast_once(origin: Vector2, dir: Vector2) -> int:
 	return count
 
 
+func _build_flash_lines() -> void:
+	for dir in DIRS:
+		var line := Line2D.new()
+		line.width = 4.0
+		line.default_color = Color(0.12, 0.1, 0.08, 0.85)
+		line.z_index = 40
+		line.visible = false
+		InkFx.apply(line)
+		add_child(line)
+		_flash_lines.append(line)
+
+
 func _flash(dir: Vector2) -> void:
-	var line := Line2D.new()
-	line.width = 4.0
-	line.default_color = Color(0.12, 0.1, 0.08, 0.85)
+	var idx := DIRS.find(dir)
+	if idx < 0 or idx >= _flash_lines.size():
+		return
+	var line: Line2D = _flash_lines[idx]
 	line.points = PackedVector2Array([Vector2.ZERO, dir * attack_range])
-	add_child(line)
+	line.visible = true
+	line.modulate.a = 1.0
+	var previous = line.get_meta("fade_tween", null)
+	if previous is Tween:
+		previous.kill()
 	if is_inside_tree():
 		var tw := create_tween()
 		tw.tween_property(line, "modulate:a", 0.0, 0.18)
-		tw.finished.connect(line.queue_free)
-	else:
-		line.queue_free()
+		tw.finished.connect(func(): line.visible = false)
+		line.set_meta("fade_tween", tw)
 
 
 func _distance_to_segment(p: Vector2, a: Vector2, b: Vector2) -> float:

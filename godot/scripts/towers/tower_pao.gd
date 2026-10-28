@@ -169,6 +169,7 @@ func _explode(pos: Vector2) -> void:
 	var s := Sprite2D.new()
 	s.texture = TextureUtil.atlas(EXPLOSION_TEXTURE)
 	s.scale = TextureUtil.scale_for(EXPLOSION_TEXTURE, 96.0)
+	InkFx.apply(s)
 	s.z_index = 50
 	add_child(s)
 	s.global_position = pos

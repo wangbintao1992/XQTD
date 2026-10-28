@@ -44,6 +44,7 @@ func _ready() -> void:
 		area.input_event.connect(_on_click_area_input_event)
 	if _hit:
 		_hit.visible = false
+		InkFx.apply(_hit)
 	_refresh_overlay()
 
 

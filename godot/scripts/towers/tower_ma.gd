@@ -142,10 +142,12 @@ func _dash(victim: Node) -> void:
 	line.width = 3.0
 	line.default_color = Color(0.15, 0.12, 0.1, 0.8)
 	line.points = PackedVector2Array([Vector2.ZERO, local])
+	InkFx.apply(line)
 	add_child(line)
 
 	var s := Sprite2D.new()
 	s.texture = TextureUtil.atlas(EXPLOSION_TEXTURE)
+	InkFx.apply(s)
 	s.scale = TextureUtil.scale_for(EXPLOSION_TEXTURE, 72.0)
 	s.z_index = 50
 	add_child(s)
