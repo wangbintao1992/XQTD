@@ -13,6 +13,11 @@ extends CanvasLayer
 @onready var weather_label: Label = $Root/WeatherLabel
 @onready var best_label: Label = $Root/BestLabel
 
+const BAR_SMOOTH_SPEED := 5.0
+
+var _target_progress := 0.0
+var _display_progress := 0.0
+
 
 func _ready() -> void:
 	var font := UiFont.make()
@@ -22,6 +27,7 @@ func _ready() -> void:
 	set_qi(100)
 	set_lives(20)
 	set_wave(1, 5)
+	_style_progress_bar()
 	set_progress(0.0)
 	set_tip("")
 
@@ -71,8 +77,44 @@ func set_wave(w: int, max_wave: int) -> void:
 		wave_label.text = "波次 %d/%d" % [w, max_wave]
 
 
+func _process(delta: float) -> void:
+	_display_progress = move_toward(
+		_display_progress, _target_progress, BAR_SMOOTH_SPEED * delta
+	)
+	var bar := _bar()
+	if bar:
+		bar.value = _display_progress * 100.0
+
+
 func set_progress(p: float) -> void:
-	progress.value = clampf(p, 0.0, 1.0) * 100.0
+	_target_progress = clampf(p, 0.0, 1.0)
+
+
+func _bar() -> ProgressBar:
+	if progress == null:
+		progress = get_node_or_null("Root/ProgressBar") as ProgressBar
+	return progress
+
+
+func _style_progress_bar() -> void:
+	var bar := _bar()
+	if bar == null:
+		return
+	var track := StyleBoxFlat.new()
+	track.bg_color = Color(60.0 / 255.0, 56.0 / 255.0, 52.0 / 255.0, 120.0 / 255.0)
+	track.corner_radius_top_left = 3
+	track.corner_radius_top_right = 3
+	track.corner_radius_bottom_left = 3
+	track.corner_radius_bottom_right = 3
+	bar.add_theme_stylebox_override("background", track)
+
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = Color(178.0 / 255.0, 58.0 / 255.0, 44.0 / 255.0, 235.0 / 255.0)
+	fill.corner_radius_top_left = 3
+	fill.corner_radius_top_right = 3
+	fill.corner_radius_bottom_left = 3
+	fill.corner_radius_bottom_right = 3
+	bar.add_theme_stylebox_override("fill", fill)
 
 
 func set_tip(text: String) -> void:

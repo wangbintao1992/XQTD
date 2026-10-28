@@ -25,6 +25,35 @@ func run(t) -> void:
 		card._ready()
 	var icon = card.get_node("Icon") as TextureRect
 	t.check(icon.texture is AtlasTexture, "sidebar icon trimmed")
+
+	hud._style_progress_bar()
+	var bar = hud.get_node("Root/ProgressBar") as ProgressBar
+	t.eq(bar.offset_top, 649.0, "wave bar y")
+	t.eq(bar.offset_bottom - bar.offset_top, 7.0, "wave bar thickness")
+	var fill_style = bar.get_theme_stylebox("fill")
+	var track_style = bar.get_theme_stylebox("background")
+	t.check(fill_style is StyleBoxFlat, "wave bar fill style")
+	t.check(track_style is StyleBoxFlat, "wave bar track style")
+	if fill_style is StyleBoxFlat:
+		t.approx(fill_style.bg_color.r, 178.0 / 255.0, 0.001, "fill red")
+		t.approx(fill_style.bg_color.g, 58.0 / 255.0, 0.001, "fill green")
+		t.approx(fill_style.bg_color.a, 235.0 / 255.0, 0.001, "fill alpha")
+	if track_style is StyleBoxFlat:
+		t.approx(track_style.bg_color.a, 120.0 / 255.0, 0.001, "track alpha")
+
+	var stage = hud.get_node("Root/Stage") as Control
+	t.approx((stage.offset_top + stage.offset_bottom) * 0.5, 148.0, 0.1, "stage y")
+	var wave_text = hud.get_node("Root/WaveText") as Control
+	t.approx((wave_text.offset_top + wave_text.offset_bottom) * 0.5, 698.0, 0.1, "wave text y")
+	var round_tip = hud.get_node("Root/RoundTip") as Control
+	t.approx((round_tip.offset_top + round_tip.offset_bottom) * 0.5, 170.0, 0.1, "round tip y")
+
+	hud.set_progress(0.5)
+	hud._process(0.05)
+	t.approx(bar.value, 25.0, 0.5, "progress smooth midpoint")
+	hud._process(1.0)
+	t.approx(bar.value, 50.0, 0.5, "progress reaches target")
+
 	hud.free()
 	sidebar.free()
 
