@@ -1,6 +1,6 @@
 extends Node
 
-## 集成冒烟：开局 → 出兵 → 真实选词条链路走 5 波 → 词条生效/波次 6 → 放塔/菜单/卖出 → 天气 → 结束 → 重开。
+## 集成冒烟：开局 → 出兵 → 真实选词条链路走 9 波到第 10 波 → 异变/精英生效 → 放塔/菜单/卖出 → 天气 → 结束 → 重开。
 
 func _ready() -> void:
 	var main = load("res://scenes/main.tscn").instantiate()
@@ -33,7 +33,7 @@ func _ready() -> void:
 	print("INTEGRATION towers=", che != null)
 
 	# 真实选词条链路：清波 → 选卡 → 下一波，连续 9 次到第 10 波
-	var elite_seen := false
+	var elite_ok := false
 	for i in 9:
 		spawner.debug_finish_wave()
 		wave._process(0.0)
@@ -43,13 +43,20 @@ func _ready() -> void:
 			card_picker.pick(0)
 			card_picker._process(0.5)
 		wave._process(3.1)
-		if wave.wave == 5 and spawner.elite_kind.size() > 0:
-			elite_seen = true
+		if wave.wave == 5 and not elite_ok:
+			spawner._process(0.6)
+			if enemies.get_child_count() > 0:
+				var elite_enemy = enemies.get_child(0)
+				elite_ok = bool(elite_enemy.kind.get("elite", false))
+				if elite_ok:
+					var before_traits: int = RunStateData.instance.traits.size()
+					elite_enemy.take_damage(999999)
+					elite_ok = RunStateData.instance.traits.size() > before_traits
 
+	var expected_range: float = initial_range * 1.25 * MutationPool.tower_range_mult("che")
 	var pipeline_ok: bool = RunStateData.has("range_plus") \
-		and che != null and absf(che.attack_range - initial_range * 1.25) < 0.5
+		and che != null and absf(che.attack_range - expected_range) < 0.5
 	var endless_ok: bool = wave != null and wave.wave >= 10
-	var elite_ok: bool = elite_seen
 	print("INTEGRATION pipeline=", pipeline_ok, " endless=", endless_ok, " wave=", wave.wave, " elite=", elite_ok)
 
 	var rs_ok: bool = RunStateData.instance != null and RunStateData.has("range_plus")
@@ -103,7 +110,9 @@ func _ready() -> void:
 	var reset_ok: bool = game_over != null and not game_over.visible \
 		and Qi.value == 100 and Lives.value == 20 \
 		and main.get_node("Towers").get_child_count() == 0 \
-		and RunStateData.instance != null and RunStateData.instance.traits.size() == 0
+		and RunStateData.instance != null and RunStateData.instance.traits.size() == 0 \
+		and RunStateData.instance.mutation == "" \
+		and hud != null and hud.mutation_label.text == "异变：—"
 	print("INTEGRATION reset=", reset_ok)
 
 	var ok: bool = count > 0 and pipeline_ok and endless_ok and elite_ok and mutation_ok \

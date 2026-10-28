@@ -7,7 +7,6 @@ signal spawned(enemy: Node)
 
 const ENEMY_SCENE := preload("res://scenes/enemy.tscn")
 const KINDS := preload("res://scripts/data/enemy_kinds.gd").KINDS
-const ELITES := preload("res://scripts/data/enemy_kinds.gd").ELITES
 
 var enemy_count := 100
 var spawn_interval := 0.5
@@ -70,6 +69,7 @@ func reset_run_counter() -> void:
 	hp_mult = 1.0
 	speed_mult = 1.0
 	elite_kind = {}
+	_charm_timer = 0.0
 
 
 func total_count() -> int:
@@ -110,14 +110,17 @@ func clear_elite() -> void:
 
 func grant_elite_reward(_kind: Dictionary) -> void:
 	var owned = RunStateData.instance.traits if RunStateData.instance else []
-	var id := TraitPool.pick_one(owned)
+	var id := TraitPool.pick_one(owned, ["kumou"])
 	if id != "":
+		var added := false
 		if RunStateData.instance:
-			RunStateData.instance.add_trait(id)
-		TraitPool.apply_on_pick(id)
-		_show_toast("精英掉落：" + TraitPool.title(id))
+			added = RunStateData.instance.add_trait(id)
+		if added:
+			TraitPool.apply_on_pick(id)
+			_show_toast("精英掉落：" + TraitPool.title(id))
 	elif qi:
 		qi.earn(100)
+		_show_toast("精英掉落：+100 棋气")
 
 
 func _show_toast(msg: String) -> void:

@@ -11,6 +11,8 @@ func run(t) -> void:
 	t.check(MutationPool.title("headwind") != "", "title")
 	t.approx(MutationPool.tower_damage_mult("pao"), 1.0, 0.001, "no mutation damage")
 	t.approx(MutationPool.enemy_hp_mult(), 1.0, 0.001, "no mutation hp")
+	for _i in 10:
+		t.check(MutationPool.pick("headwind") != "headwind", "pick excludes current")
 
 	rs.set_mutation("cannon_weak_horse_strong")
 	t.approx(MutationPool.tower_damage_mult("pao"), 0.7, 0.001, "pao weak")
@@ -21,10 +23,6 @@ func run(t) -> void:
 	t.approx(MutationPool.tower_range_mult("che"), 0.75, 0.001, "che short")
 	t.approx(MutationPool.enemy_speed_mult(), 1.2, 0.001, "enemy fast")
 
-	rs.set_mutation("headwind")
-	t.approx(MutationPool.tower_damage_mult("che"), 1.5, 0.001, "headwind damage")
-	t.approx(MutationPool.enemy_hp_mult(), 1.5, 0.001, "headwind hp")
-
 	var towers := Node2D.new()
 	t.root.add_child(towers)
 	var che = preload("res://scenes/towers/tower_che.tscn").instantiate()
@@ -33,6 +31,12 @@ func run(t) -> void:
 	towers.add_child(che)
 	if not che.is_node_ready():
 		che._ready()
+	che.apply_traits()
+	t.approx(che.attack_range, 460.0 * 0.75, 0.01, "tower applies mutation range")
+
+	rs.set_mutation("headwind")
+	t.approx(MutationPool.tower_damage_mult("che"), 1.5, 0.001, "headwind damage")
+	t.approx(MutationPool.enemy_hp_mult(), 1.5, 0.001, "headwind hp")
 	che.apply_traits()
 	t.eq(che.damage, 2, "tower applies mutation damage")
 	towers.free()

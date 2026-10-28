@@ -17,6 +17,9 @@ func run(t) -> void:
 	t.root.add_child(hud)
 	t.root.add_child(sidebar)
 	t.check(hud.layer > sidebar.layer, "hud above sidebar")
+	var trait_label = hud.get_node("Root/TraitLabel") as Control
+	var mutation_label = hud.get_node("Root/MutationLabel") as Control
+	t.check(mutation_label.offset_top >= trait_label.offset_bottom, "mutation below traits")
 	var card = sidebar.get_node("Panel/CardChe") as Control
 	if not card.is_node_ready():
 		card._ready()

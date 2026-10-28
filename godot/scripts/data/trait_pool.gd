@@ -69,10 +69,10 @@ static func desc(id: String) -> String:
 	return str(data.get("desc", ""))
 
 
-static func pick_one(owned: Array) -> String:
+static func pick_one(owned: Array, excluded: Array = []) -> String:
 	var available: Array = []
 	for id in TRAITS.keys():
-		if not owned.has(id):
+		if not owned.has(id) and not excluded.has(id):
 			available.append(id)
 	if available.is_empty():
 		return ""

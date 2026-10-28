@@ -33,8 +33,13 @@ static func desc(id: String) -> String:
 	return str(data.get("desc", ""))
 
 
-static func pick() -> String:
-	var all := MUTATIONS.keys()
+static func pick(exclude: String = "") -> String:
+	var all: Array = []
+	for id in MUTATIONS.keys():
+		if id != exclude:
+			all.append(id)
+	if all.is_empty():
+		all = MUTATIONS.keys()
 	if all.is_empty():
 		return ""
 	return all[randi() % all.size()]
