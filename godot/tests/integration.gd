@@ -73,6 +73,12 @@ func _ready() -> void:
 	var ma = placement.place(load("res://scenes/towers/tower_ma.tscn"), spot) if spot != null else null
 	print("INTEGRATION all_towers=", che != null and pao != null and ma != null)
 
+	var combo = main.get_node_or_null("ComboSystem")
+	var combo_ok: bool = combo != null \
+		and combo.check_combos().has("ma_pao") \
+		and combo.try_trigger() == "ma_pao"
+	print("INTEGRATION combo=", combo_ok)
+
 	var menu = main.get_node_or_null("TowerActionMenu")
 	if pao:
 		pao.clicked.emit(pao)

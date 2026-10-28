@@ -54,7 +54,13 @@ godot --headless --path godot --fixed-fps 60 res://tests/integration.tscn
 - 每 10 波棋局异变：炮弱马强 / 车短怪快 / 逆风局；HUD 显示当前异变。
 - 每 5 波精英黑棋：黑马 / 黑车 / 黑炮，高血高奖励；击杀掉落随机词条。
 - 新词条：美人计（每 6s 停顿一个敌人）、绝杀减速（击杀后全体减速 2s）。
-- 待做 R3：马后炮 / 双车错 / 重炮、排行榜。
+- R3 已实现：马后炮 / 双车错 / 重炮、最高波数桩。
+
+## 肉鸽无尽 R3
+
+- 组合技：马后炮 / 双车错 / 重炮；阵型存在 + 6s 冷却触发，整线清屏 + 墨浪。
+- 最高波数：本地排行榜桩；结束局提交，HUD 右下显示；真实 Java 后端留后续。
+- 待做（二期）：器具 / 装备、地形 / 过河卒、精英特殊攻击、真实排行榜。
 
 ## 仍缺（M3）
 
@@ -71,8 +77,8 @@ godot/
 ├── art/            从 assets/resources/textures 复制的原美术
 ├── scenes/         main / enemy / towers / ui
 ├── scripts/
-│   ├── autoload/   GameSession / Qi / Lives / Log / Toast / RunState
-│   ├── core/       PathGraph / PathSpawner / WaveManager / RunController / WeatherSystem
+│   ├── autoload/   GameSession / Qi / Lives / Log / Toast / RunState / Leaderboard
+│   ├── core/       PathGraph / PathSpawner / WaveManager / RunController / WeatherSystem / ComboSystem
 │   ├── entities/   Enemy / PathWalker / HitPause
 │   ├── towers/     TowerBase / TowerChe / TowerPao / TowerMa / TowerPlacement
 │   ├── ui/         Hud / Sidebar / TowerCard / CardPicker / TowerActionMenu / TowerDetail / HomeMenu / GameOver
