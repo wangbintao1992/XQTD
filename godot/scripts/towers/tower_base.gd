@@ -119,6 +119,18 @@ func weather_interval_mult() -> float:
 	return WeatherSystem.tower_interval_mult()
 
 
+func equipment_damage_mult() -> float:
+	return EquipmentManagerData.instance.damage_mult() if EquipmentManagerData.instance else 1.0
+
+
+func equipment_range_mult() -> float:
+	return EquipmentManagerData.instance.range_mult() if EquipmentManagerData.instance else 1.0
+
+
+func equipment_interval_mult() -> float:
+	return EquipmentManagerData.instance.interval_mult() if EquipmentManagerData.instance else 1.0
+
+
 func spread_hit(source: Node, amount: int) -> void:
 	if not RunStateData.has("splash_hit") or enemies_root == null:
 		return

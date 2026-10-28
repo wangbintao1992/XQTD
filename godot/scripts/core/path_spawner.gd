@@ -122,6 +122,10 @@ func grant_elite_reward(_kind: Dictionary) -> void:
 		qi.earn(100)
 		_show_toast("精英掉落：+100 棋气")
 
+	if EquipmentManagerData.instance:
+		var item: Dictionary = EquipmentManagerData.instance.add_random_drop()
+		_show_toast("精英掉落装备：" + EquipmentManagerData.instance.item_name(item))
+
 
 func _show_toast(msg: String) -> void:
 	var loop := Engine.get_main_loop()

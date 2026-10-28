@@ -98,9 +98,7 @@ func _input(event: InputEvent) -> void:
 		else:
 			var merge_target = find_merge_target(target, _drag_kind)
 			if merge_target:
-				var cost := _drag_cost
-				if RunStateData.has("free_place"):
-					cost = 0
+				var cost := adjusted_cost(_drag_cost)
 				if qi and not qi.can_afford(cost):
 					_show_toast("棋气不足，需要 %d" % cost)
 				elif merge_target.merge_one():
@@ -133,8 +131,15 @@ func _show_toast(msg: String) -> void:
 		print("[TowerPlacement] ", msg)
 
 
+func adjusted_cost(base_cost: int) -> int:
+	if RunStateData.has("free_place"):
+		return 0
+	var mult := EquipmentManagerData.instance.cost_mult() if EquipmentManagerData.instance else 1.0
+	return maxi(0, int(round(float(base_cost) * mult)))
+
+
 func effective_cost() -> int:
-	return 0 if RunStateData.has("free_place") else COST
+	return adjusted_cost(COST)
 
 
 func can_place(pos: Vector2) -> bool:
@@ -229,8 +234,7 @@ func find_merge_target(pos: Vector2, kind: String):
 func place(scene: PackedScene, pos: Vector2, cost: int = COST):
 	if scene == null:
 		return null
-	if RunStateData.has("free_place"):
-		cost = 0
+	cost = adjusted_cost(cost)
 	if qi and not qi.can_afford(cost):
 		return null
 
