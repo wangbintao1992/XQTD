@@ -53,3 +53,33 @@ const KINDS := [
 		"qi_reward": 5,
 	},
 ]
+
+const ELITES := [
+	{
+		"name": "elite_ma",
+		"texture": preload("res://art/qz/b_ma.png"),
+		"hp": 30,
+		"speed_factor": 1.60,
+		"life_cost": 8,
+		"qi_reward": 100,
+		"elite": true,
+	},
+	{
+		"name": "elite_che",
+		"texture": preload("res://art/qz/b_che.png"),
+		"hp": 50,
+		"speed_factor": 0.80,
+		"life_cost": 10,
+		"qi_reward": 150,
+		"elite": true,
+	},
+	{
+		"name": "elite_pao",
+		"texture": preload("res://art/qz/b_pao.png"),
+		"hp": 40,
+		"speed_factor": 1.00,
+		"life_cost": 8,
+		"qi_reward": 120,
+		"elite": true,
+	},
+]

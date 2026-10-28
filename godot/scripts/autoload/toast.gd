@@ -59,7 +59,10 @@ func _ensure() -> void:
 	_label.add_theme_font_override("font", UiFont.make())
 	_panel.add_child(_label)
 
-	var vp := get_viewport().get_visible_rect().size
+	var vp := Vector2(1280, 720)
+	var viewport := get_viewport()
+	if viewport:
+		vp = viewport.get_visible_rect().size
 	_panel.position = Vector2(
 		vp.x * 0.5 - PANEL_SIZE.x * 0.5,
 		vp.y - 96.0 - PANEL_SIZE.y

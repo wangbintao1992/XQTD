@@ -61,6 +61,16 @@ static func desc(id: String) -> String:
 	return str(data.get("desc", ""))
 
 
+static func pick_one(owned: Array) -> String:
+	var available: Array = []
+	for id in TRAITS.keys():
+		if not owned.has(id):
+			available.append(id)
+	if available.is_empty():
+		return ""
+	return available[randi() % available.size()]
+
+
 static func pick_three(owned: Array) -> Array:
 	var available: Array = []
 	for id in TRAITS.keys():

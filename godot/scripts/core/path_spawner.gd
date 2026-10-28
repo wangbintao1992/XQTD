@@ -7,6 +7,7 @@ signal spawned(enemy: Node)
 
 const ENEMY_SCENE := preload("res://scenes/enemy.tscn")
 const KINDS := preload("res://scripts/data/enemy_kinds.gd").KINDS
+const ELITES := preload("res://scripts/data/enemy_kinds.gd").ELITES
 
 var enemy_count := 100
 var spawn_interval := 0.5
@@ -22,6 +23,7 @@ var spawned_count := 0
 var run_spawned_total := 0
 var hp_mult := 1.0
 var speed_mult := 1.0
+var elite_kind: Dictionary = {}
 var spawn_timer := 0.0
 var _rng := RandomNumberGenerator.new()
 
@@ -66,10 +68,39 @@ func reset_run_counter() -> void:
 	run_spawned_total = 0
 	hp_mult = 1.0
 	speed_mult = 1.0
+	elite_kind = {}
 
 
 func total_count() -> int:
 	return spawned_count
+
+
+func set_elite(kind: Dictionary) -> void:
+	elite_kind = kind.duplicate()
+
+
+func clear_elite() -> void:
+	elite_kind = {}
+
+
+func grant_elite_reward(_kind: Dictionary) -> void:
+	var owned = RunStateData.instance.traits if RunStateData.instance else []
+	var id := TraitPool.pick_one(owned)
+	if id != "":
+		if RunStateData.instance:
+			RunStateData.instance.add_trait(id)
+		TraitPool.apply_on_pick(id)
+		_show_toast("精英掉落：" + TraitPool.title(id))
+	elif qi:
+		qi.earn(100)
+
+
+func _show_toast(msg: String) -> void:
+	var loop := Engine.get_main_loop()
+	if loop is SceneTree:
+		var toast = (loop as SceneTree).root.get_node_or_null("Toast")
+		if toast:
+			toast.show(msg)
 
 
 func reward_for(base: int) -> int:
@@ -115,7 +146,12 @@ func spawn_one() -> void:
 		spawned_count = enemy_count
 		return
 
-	var kind: Dictionary = KINDS[_rng.randi_range(0, KINDS.size() - 1)]
+	var kind: Dictionary
+	if not elite_kind.is_empty():
+		kind = elite_kind
+		elite_kind = {}
+	else:
+		kind = KINDS[_rng.randi_range(0, KINDS.size() - 1)]
 	var e: Dictionary = graph.edges[edge]
 	var dir := 1 if e.a == graph.start_node else -1
 
@@ -130,6 +166,8 @@ func spawn_one() -> void:
 	if qi:
 		enemy.died.connect(func(k: Dictionary):
 			qi.earn(reward_for(int(k.qi_reward)))
+			if bool(k.get("elite", false)):
+				grant_elite_reward(k)
 		)
 	if lives:
 		enemy.reached_base.connect(func(cost: int): lives.lose(cost))

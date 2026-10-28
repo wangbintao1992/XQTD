@@ -81,6 +81,14 @@ func _apply_wave_scaling() -> void:
 				var toast = get_node_or_null("/root/Toast")
 				if toast:
 					toast.show("棋局异变：" + MutationPool.title(RunStateData.instance.mutation))
+		if wave % 5 == 0 and spawner.has_method("set_elite"):
+			var elites = preload("res://scripts/data/enemy_kinds.gd").ELITES
+			spawner.set_elite(elites[randi() % elites.size()])
+			var toast2 = get_node_or_null("/root/Toast")
+			if toast2:
+				toast2.show("精英来袭")
+		elif spawner.has_method("clear_elite"):
+			spawner.clear_elite()
 		spawner.enemy_count = maxi(1, int(round(float(base_round) * pow(count_growth, wave - 1))))
 		spawner.hp_mult = pow(hp_growth, wave - 1) * MutationPool.enemy_hp_mult()
 		spawner.speed_mult = pow(speed_growth, floor((wave - 1) / 5.0)) * MutationPool.enemy_speed_mult()
